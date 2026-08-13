@@ -68,3 +68,15 @@ def test_downgrade_rejects_a_receipt_that_is_not_the_versioned_contract() -> Non
 
     with pytest.raises(ProfilePolicyError, match="human actor"):
         select_profile(requested_profile="lean", downgrade_receipt=receipt)
+
+
+def test_downgrade_requires_portable_receipt_and_work_references() -> None:
+    receipt = _receipt()
+    receipt["receipt_id"] = "not portable"
+    with pytest.raises(ProfilePolicyError, match="receipt ID"):
+        select_profile(requested_profile="lean", downgrade_receipt=receipt)
+
+    receipt = _receipt()
+    receipt["work_ref"] = {"ref": "not a portable ref", "sha256": f"sha256:{'a' * 64}"}
+    with pytest.raises(ProfilePolicyError, match="portable work reference"):
+        select_profile(requested_profile="lean", downgrade_receipt=receipt)

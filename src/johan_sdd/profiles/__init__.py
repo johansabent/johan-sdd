@@ -24,6 +24,8 @@ HARD_TRIGGERS = (
     "high-uncertainty-or-high-blast-radius",
 )
 _SHA256_REF = re.compile(r"^sha256:[0-9a-f]{64}$")
+_PORTABLE_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:-]*$")
+_PORTABLE_REF = re.compile(r"^[a-z][a-z0-9-]*:[A-Za-z0-9][A-Za-z0-9._:/@+=-]*$")
 
 
 class ProfilePolicyError(ValueError):
@@ -77,6 +79,8 @@ def _validate_downgrade_receipt(receipt: Mapping[str, object] | None) -> None:
         raise ProfilePolicyError("lean downgrade requires a human decision receipt")
     if receipt.get("schema_version") != "johan-sdd/human-decision-receipt/v1":
         raise ProfilePolicyError("human decision receipt has an unsupported schema version")
+    if not isinstance(receipt.get("receipt_id"), str) or not _PORTABLE_ID.fullmatch(receipt["receipt_id"]):
+        raise ProfilePolicyError("human decision receipt requires a portable receipt ID")
     if receipt.get("decision") != "profile-downgrade":
         raise ProfilePolicyError("human decision receipt must record a profile downgrade")
     if receipt.get("from_profile") != "full" or receipt.get("to_profile") != "lean":
@@ -91,9 +95,11 @@ def _validate_downgrade_receipt(receipt: Mapping[str, object] | None) -> None:
         raise ProfilePolicyError("human decision receipt requires a human actor")
     work_ref = receipt.get("work_ref")
     if not isinstance(work_ref, Mapping) or not isinstance(work_ref.get("ref"), str):
-        raise ProfilePolicyError("human decision receipt requires a hashed work reference")
+        raise ProfilePolicyError("human decision receipt requires a portable work reference")
+    if not _PORTABLE_REF.fullmatch(work_ref["ref"]):
+        raise ProfilePolicyError("human decision receipt requires a portable work reference")
     if not isinstance(work_ref.get("sha256"), str) or not _SHA256_REF.fullmatch(work_ref["sha256"]):
-        raise ProfilePolicyError("human decision receipt requires a hashed work reference")
+        raise ProfilePolicyError("human decision receipt requires a portable work reference")
     rationale = receipt.get("rationale")
     if not isinstance(rationale, str) or not rationale.strip():
         raise ProfilePolicyError("human decision receipt requires a rationale")
