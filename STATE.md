@@ -41,6 +41,8 @@ reported no available Claude quota; compatibility remains contract-tested withou
   Codex+Grok `feature/full` decisions, Grok risk readback, and idempotent promotion proof.
 - `.gitattributes` fixes LF as the repository text policy, and evidence tests hash canonical LF so
   receipts remain reproducible in worktrees created under Windows `core.autocrlf=true`.
+- The pilot is integrated on `main` at `49301ee`; a fresh detached checkout passed 198 tests,
+  compileall, lock validation, wheel/sdist build, evidence hashes, and clean-worktree readback.
 
 ## Blockers
 
@@ -50,5 +52,5 @@ The installed Grok review wrapper also needs a separate owner update for Grok 1.
 
 ## Next safe action
 
-Run the final locked suite in a fresh LF checkout, integrate the pilot branch locally, and leave
-remote creation/push plus global desired-state application as explicit Johan decisions.
+Johan may separately authorize remote creation/push and public publication. Any application of
+desired state to a global agent home remains a different explicit gate.
