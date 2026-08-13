@@ -8,8 +8,8 @@ Onda 1: local runtime integrated; pilot and external adoption remain gated.
 
 ## Active work
 
-The root coordinator is verifying the integrated CLI, routing, session, capture, host, updater,
-rollback, concurrency, and evidence paths before the Codex+Claude pilot.
+The local runtime and its reconstructable closeout evidence are complete. The Codex+Claude pilot
+is waiting at the dashboard repository's mandatory live Linear preflight.
 
 ## Locked decisions
 
@@ -22,21 +22,27 @@ rollback, concurrency, and evidence paths before the Codex+Claude pilot.
 
 ## Human gates
 
-- First commit, remote creation, push, and public GitHub repository.
+- Remote creation, push, and public GitHub repository.
 - Any batch that applies desired state to a global agent home.
-- Dashboard pilot readiness, Work/global promotion, and destructive cleanup.
+- Work/global promotion and destructive cleanup.
 
 ## Current evidence
 
 - Local Git repository has a verified commit history on `main`, with no remote.
 - Upstream pins and local seams were independently inventoried in the active goal.
 - Onboarding taxonomy classification is `personal-project` under `personal-dev-root`.
+- The locked suite passes 197 tests, and `evidence/packets/local-runtime-closeout.json` binds the
+  implementation commit, verification log, charter, CLI hash, risks, and next consumer.
+- All four implementation worktrees and their local task branches were removed after patch-equivalence
+  and clean-worktree readback; the session registry records four closed claims at revision 3.
 
 ## Blockers
 
-No implementation blocker. Publication and global-host adoption remain intentionally gated.
+The current Codex runtime exposes no Linear connector. The `johan-dashboard` hard gate requires a
+live read proving workspace `johan-pc`, team `Johan PC`, key `JOH` before non-trivial pilot work.
+Publication and global-host adoption also remain intentionally gated.
 
 ## Next safe action
 
-Commit the integrated runtime, run the completion audit, then disposition the existing dashboard
-work safely before the Codex+Claude pilot.
+Restore a Linear connector that proves live read access to `JOH`, then run the Codex+Claude pilot
+in an isolated dashboard worktree. Do not bypass the dashboard's tracker gate.
