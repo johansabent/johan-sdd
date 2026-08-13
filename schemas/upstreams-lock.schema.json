@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.johan-sdd.dev/upstreams-lock/v1",
+  "title": "Johan SDD upstream lock",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["$schema", "schema_version", "upstreams"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "schema_version": { "const": "johan-sdd/upstreams-lock/v1" },
+    "upstreams": {
+      "type": "array",
+      "minItems": 2,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "owner", "repository", "source", "version", "tag_object", "peeled_commit", "license", "role"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "owner": { "type": "string", "minLength": 1 },
+          "repository": { "type": "string", "minLength": 1 },
+          "source": { "type": "string", "format": "uri", "pattern": "^https://github\\.com/" },
+          "version": { "type": "string", "pattern": "^v[0-9]+\\.[0-9]+\\.[0-9]+$" },
+          "tag_object": { "$ref": "#/$defs/git_sha" },
+          "peeled_commit": { "$ref": "#/$defs/git_sha" },
+          "license": { "const": "MIT" },
+          "role": { "type": "string", "minLength": 1 }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "git_sha": { "type": "string", "pattern": "^[0-9a-f]{40}$" }
+  }
+}
+

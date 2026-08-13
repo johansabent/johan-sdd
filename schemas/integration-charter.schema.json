@@ -1,0 +1,399 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.johan-sdd.dev/integration-charter/v1",
+  "title": "Johan SDD integration charter",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["$schema", "schema_version", "contract_registry", "product", "profiles", "routing", "host_integration", "sessions", "capture", "updater", "evidence"],
+  "properties": {
+    "$schema": { "type": "string", "minLength": 1 },
+    "schema_version": { "const": "johan-sdd/integration-charter/v1" },
+    "contract_registry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "apply-receipt", "authority-decision", "capture-packet.v2", "cli-invocation",
+        "content-bundle", "cutover-marker", "desired-state", "evidence-artifact",
+        "evidence-packet", "human-decision-receipt", "integration-charter",
+        "micro-assessment", "pause-recovery", "preview", "promotion-receipt",
+        "promotion-request", "rollback-receipt", "secret-scan-receipt",
+        "session-claims", "update-manifest", "upstreams-lock"
+      ],
+      "properties": {
+        "apply-receipt": { "const": "../schemas/apply-receipt.schema.json" },
+        "authority-decision": { "const": "../schemas/authority-decision.schema.json" },
+        "capture-packet.v2": { "const": "../schemas/capture-packet.v2.schema.json" },
+        "cli-invocation": { "const": "../schemas/cli-invocation.schema.json" },
+        "content-bundle": { "const": "../schemas/content-bundle.schema.json" },
+        "cutover-marker": { "const": "../schemas/cutover-marker.schema.json" },
+        "desired-state": { "const": "../schemas/desired-state.schema.json" },
+        "evidence-artifact": { "const": "../schemas/evidence-artifact.schema.json" },
+        "evidence-packet": { "const": "../schemas/evidence-packet.schema.json" },
+        "human-decision-receipt": { "const": "../schemas/human-decision-receipt.schema.json" },
+        "integration-charter": { "const": "../schemas/integration-charter.schema.json" },
+        "micro-assessment": { "const": "../schemas/micro-assessment.schema.json" },
+        "pause-recovery": { "const": "../schemas/pause-recovery.schema.json" },
+        "preview": { "const": "../schemas/preview.schema.json" },
+        "promotion-receipt": { "const": "../schemas/promotion-receipt.schema.json" },
+        "promotion-request": { "const": "../schemas/promotion-request.schema.json" },
+        "rollback-receipt": { "const": "../schemas/rollback-receipt.schema.json" },
+        "secret-scan-receipt": { "const": "../schemas/secret-scan-receipt.schema.json" },
+        "session-claims": { "const": "../schemas/session-claims.schema.json" },
+        "update-manifest": { "const": "../schemas/update-manifest.schema.json" },
+        "upstreams-lock": { "const": "../schemas/upstreams-lock.schema.json" }
+      }
+    },
+    "product": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "version", "portability", "runtime", "supported_agents", "upstreams_lock", "upstream_strategy"],
+      "properties": {
+        "name": { "const": "johan-sdd" },
+        "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+        "portability": { "const": "public-host-neutral" },
+        "runtime": { "const": "python>=3.11" },
+        "supported_agents": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+        "upstreams_lock": { "const": "upstreams.lock.json" },
+        "upstream_strategy": { "const": "pinned-downstream-adapters-no-fork" }
+      }
+    },
+    "profiles": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["default", "selection", "definitions"],
+      "properties": {
+        "default": { "const": "lean" },
+        "selection": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["automatic", "explanation", "natural_language_override", "override_policy", "full_triggers"],
+          "properties": {
+            "automatic": { "const": true },
+            "explanation": { "const": "one-line-required" },
+            "natural_language_override": { "const": true },
+            "override_policy": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["escalation", "downgrade"],
+              "properties": {
+                "escalation": { "const": "natural-language-always-allowed" },
+                "downgrade": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["requires_no_hard_trigger", "requires_human_decision_receipt"],
+                  "properties": {
+                    "requires_no_hard_trigger": { "const": true },
+                    "requires_human_decision_receipt": { "const": true }
+                  }
+                }
+              }
+            },
+            "full_triggers": { "$ref": "#/$defs/nonEmptyStrings" }
+          }
+        },
+        "definitions": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["lean", "full"],
+          "properties": {
+            "lean": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["flow", "artifacts"],
+              "properties": {
+                "flow": { "$ref": "#/$defs/nonEmptyStrings" },
+                "artifacts": { "$ref": "#/$defs/nonEmptyStrings" }
+              }
+            },
+            "full": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["flow", "artifacts", "constitution_policy"],
+              "properties": {
+                "flow": { "$ref": "#/$defs/nonEmptyStrings" },
+                "artifacts": { "$ref": "#/$defs/nonEmptyStrings" },
+                "constitution_policy": { "const": "unique-project-principles-and-references-only" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "routing": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["interfaces", "adapter", "lanes", "dual_write", "tracker_authority", "git_artifact_authority"],
+      "properties": {
+        "interfaces": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["phase_router", "engineering_flow_hub"],
+          "properties": {
+            "phase_router": { "const": "phase-router/v1" },
+            "engineering_flow_hub": { "const": "engineering-flow-hub/v1" }
+          }
+        },
+        "adapter": { "const": "spec-driven-delivery/v1" },
+        "lanes": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["micro", "small", "feature"],
+          "properties": {
+            "micro": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["owner", "admission", "worktree", "dirty_pause", "artifacts", "commit_gate"],
+              "properties": {
+                "owner": { "const": "delivery-envelope" },
+                "admission": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["max_files", "max_changed_lines", "allowed_surfaces", "forbidden_surfaces", "uncertainty_action"],
+                  "properties": {
+                    "max_files": { "const": 3 },
+                    "max_changed_lines": { "const": 50 },
+                    "allowed_surfaces": { "$ref": "#/$defs/nonEmptyStrings" },
+                    "forbidden_surfaces": { "$ref": "#/$defs/nonEmptyStrings" },
+                    "uncertainty_action": { "const": "promote-to-feature" }
+                  }
+                },
+                "worktree": { "const": "primary-clean-checkout" },
+                "dirty_pause": { "const": false },
+                "artifacts": { "$ref": "#/$defs/nonEmptyStrings" },
+                "commit_gate": { "const": "explicit-local-commit" }
+              }
+            },
+            "small": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["owner", "modules", "spec_kit_artifacts", "mutable_worktree", "readonly_checkout"],
+              "properties": {
+                "owner": { "const": "engineering-flow-hub/v1" },
+                "modules": { "$ref": "#/$defs/nonEmptyStrings" },
+                "spec_kit_artifacts": { "const": false },
+                "mutable_worktree": { "const": "isolated-required" },
+                "readonly_checkout": { "const": "primary-allowed" }
+              }
+            },
+            "feature": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["owner", "spec_kit_owns", "flow_hub_owns", "worktree"],
+              "properties": {
+                "owner": { "const": "spec-driven-delivery/v1" },
+                "spec_kit_owns": { "$ref": "#/$defs/nonEmptyStrings" },
+                "flow_hub_owns": { "$ref": "#/$defs/nonEmptyStrings" },
+                "worktree": { "const": "isolated-required" }
+              }
+            }
+          }
+        },
+        "dual_write": { "const": "forbidden" },
+        "tracker_authority": { "$ref": "#/$defs/nonEmptyStrings" },
+        "git_artifact_authority": { "$ref": "#/$defs/nonEmptyStrings" }
+      }
+    },
+    "host_adapters": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["interface", "phase_router", "engineering_flow_hub"],
+        "properties": {
+          "interface": { "const": "johan-host-adapter/v1" },
+          "phase_router": { "type": "string", "minLength": 1 },
+          "engineering_flow_hub": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "host_integration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["product_output", "desired_state_schema", "preview_schema", "apply_receipt_schema", "preview", "apply", "apply_actor", "direct_agent_home_writes", "authority_expansion_gate"],
+      "properties": {
+        "product_output": { "const": "desired-state-and-preview" },
+        "desired_state_schema": { "const": "../schemas/desired-state.schema.json" },
+        "preview_schema": { "const": "../schemas/preview.schema.json" },
+        "apply_receipt_schema": { "const": "../schemas/apply-receipt.schema.json" },
+        "preview": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["binds", "expires_on_pre_state_change"],
+          "properties": {
+            "binds": { "$ref": "#/$defs/nonEmptyStrings" },
+            "expires_on_pre_state_change": { "const": true }
+          }
+        },
+        "apply": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["input", "transaction", "on_failure"],
+          "properties": {
+            "input": { "const": "unexpired-preview" },
+            "transaction": { "$ref": "#/$defs/nonEmptyStrings" },
+            "on_failure": { "const": "rollback-to-exact-snapshot" }
+          }
+        },
+        "apply_actor": { "const": "separately-authorized-host-owner" },
+        "direct_agent_home_writes": { "const": false },
+        "authority_expansion_gate": { "const": "human" }
+      }
+    },
+    "sessions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["registry", "authority_modes", "authority_derivation", "authority_mode_cardinality", "cutover", "heartbeat", "states", "resource_claims", "resource_conflict_action", "max_automatic_worktrees_per_repository", "dirty_pause"],
+      "properties": {
+        "registry": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["schema", "schema_version", "location", "relationship", "write_protocol", "corrupt_or_ambiguous_action", "canonical_worktree_path"],
+          "properties": {
+            "schema": { "const": "../schemas/session-claims.schema.json" },
+            "schema_version": { "const": "agent-work-session/v1" },
+            "location": { "type": "string", "minLength": 1 },
+            "relationship": { "const": "sibling-not-replacement-of-agent-worktree-context-v1" },
+            "write_protocol": { "const": "exclusive-file-lock-plus-atomic-replace-plus-revision-cas" },
+            "corrupt_or_ambiguous_action": { "const": "block-mutations-allow-inspection-and-repair" },
+            "canonical_worktree_path": { "type": "string", "minLength": 1 }
+          }
+        },
+        "authority_modes": { "type": "array", "minItems": 4, "maxItems": 4, "uniqueItems": true, "items": { "enum": ["pre_cutover_json_authority", "blocked_authority_transition", "post_cutover_buzz_authority", "post_cutover_fallback_evidence"] } },
+        "authority_derivation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["caller_override", "input", "pre_cutover_json_authority", "blocked_authority_transition", "post_cutover_buzz_authority", "post_cutover_fallback_evidence"],
+          "properties": {
+            "caller_override": { "const": false },
+            "input": { "$ref": "#/$defs/nonEmptyStrings" },
+            "pre_cutover_json_authority": { "type": "string", "minLength": 1 },
+            "blocked_authority_transition": { "type": "string", "minLength": 1 },
+            "post_cutover_buzz_authority": { "type": "string", "minLength": 1 },
+            "post_cutover_fallback_evidence": { "type": "string", "minLength": 1 }
+          }
+        },
+        "authority_mode_cardinality": { "const": "exactly-one-derived-mode-per-lifecycle-event" },
+        "cutover": { "type": "string", "minLength": 1 },
+        "heartbeat": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["strategy", "ttl_minutes", "stale_proof", "stale_transition"],
+          "properties": {
+            "strategy": { "const": "opportunistic-debounced-no-daemon" },
+            "ttl_minutes": { "type": "integer", "minimum": 1 },
+            "stale_proof": { "$ref": "#/$defs/nonEmptyStrings" },
+            "stale_transition": { "type": "string", "minLength": 1 }
+          }
+        },
+        "states": { "$ref": "#/$defs/nonEmptyStrings" },
+        "resource_claims": { "$ref": "#/$defs/nonEmptyStrings" },
+        "resource_conflict_action": { "const": "block-mutating-operation" },
+        "max_automatic_worktrees_per_repository": { "type": "integer", "minimum": 1 },
+        "dirty_pause": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["recovery_schema", "allowed_only", "preconditions", "snapshot_algorithm", "must_include", "must_not_touch", "insufficient_methods", "protected_ref_lifetime", "handoff_to_different_owner"],
+          "properties": {
+            "recovery_schema": { "const": "../schemas/pause-recovery.schema.json" },
+            "allowed_only": { "const": "isolated-feature-worktree" },
+            "preconditions": { "$ref": "#/$defs/nonEmptyStrings" },
+            "snapshot_algorithm": { "$ref": "#/$defs/nonEmptyStrings" },
+            "must_include": { "$ref": "#/$defs/nonEmptyStrings" },
+            "must_not_touch": { "$ref": "#/$defs/nonEmptyStrings" },
+            "insufficient_methods": { "$ref": "#/$defs/nonEmptyStrings" },
+            "protected_ref_lifetime": { "const": "until-explicit-verified-cleanup" },
+            "handoff_to_different_owner": { "const": "requires-authorized-local-checkpoint-commit" }
+          }
+        }
+      }
+    },
+    "capture": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["packet_schema", "promotion_request_schema", "promotion_receipt_schema", "legacy_packet_policy", "identity", "generation_actor", "generation_output", "promotion_actor", "same_actor", "sink_cardinality", "fallback_policy", "promotion_protocol", "personal_auto_promotion", "work_hub_global_promotion", "dashboard_failure", "wrap_is_capture"],
+      "properties": {
+        "packet_schema": { "const": "../schemas/capture-packet.v2.schema.json" },
+        "promotion_request_schema": { "const": "../schemas/promotion-request.schema.json" },
+        "promotion_receipt_schema": { "const": "../schemas/promotion-receipt.schema.json" },
+        "legacy_packet_policy": { "const": "capture-packet-v1-is-not-extended" },
+        "identity": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["packet_digest", "capture_id", "cursor_identity", "authority_decision_ref"],
+          "properties": {
+            "packet_digest": { "type": "string", "minLength": 1 },
+            "capture_id": { "type": "string", "minLength": 1 },
+            "cursor_identity": { "type": "string", "minLength": 1 },
+            "authority_decision_ref": { "const": "required-durable-decision-receipt" }
+          }
+        },
+        "generation_actor": { "const": "session-owner" },
+        "generation_output": { "const": "validated-noncanonical-capture" },
+        "promotion_actor": { "const": "authorized-promoter" },
+        "same_actor": { "const": false },
+        "sink_cardinality": { "const": "exactly-one-per-lifecycle-event" },
+        "fallback_policy": { "type": "string", "minLength": 1 },
+        "promotion_protocol": { "$ref": "#/$defs/nonEmptyStrings" },
+        "personal_auto_promotion": { "const": "host-policy-not-product-default" },
+        "work_hub_global_promotion": { "const": "explicit-authorization-required" },
+        "dashboard_failure": { "const": "retain-session-and-pending-capture-for-retry" },
+        "wrap_is_capture": { "const": false }
+      }
+    },
+    "updater": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["trust_root", "accepted_references", "allowlist", "never_automatic", "canary", "rollback", "self_expansion", "unknown_or_dirty_target"],
+      "properties": {
+        "trust_root": { "const": "manifests/upstreams.lock.json" },
+        "accepted_references": { "const": "immutable-tag-object-and-peeled-commit" },
+        "allowlist": { "$ref": "#/$defs/nonEmptyStrings" },
+        "never_automatic": { "$ref": "#/$defs/nonEmptyStrings" },
+        "canary": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["environment", "required"],
+          "properties": {
+            "environment": { "const": "disposable-worktree" },
+            "required": { "$ref": "#/$defs/nonEmptyStrings" }
+          }
+        },
+        "rollback": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["input", "result", "verification"],
+          "properties": {
+            "input": { "$ref": "#/$defs/nonEmptyStrings" },
+            "result": { "const": "exact-old-content-and-pins" },
+            "verification": { "const": "content-hash-readback" }
+          }
+        },
+        "self_expansion": { "const": false },
+        "unknown_or_dirty_target": { "const": "skip-and-report" }
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema", "schema_path", "required_at", "compaction_resistant", "large_logs", "transcript_is_evidence", "missing_or_unreproducible"],
+      "properties": {
+        "schema": { "const": "johan-sdd/evidence-packet/v1" },
+        "schema_path": { "const": "../schemas/evidence-packet.schema.json" },
+        "required_at": { "$ref": "#/$defs/nonEmptyStrings" },
+        "compaction_resistant": { "const": true },
+        "large_logs": { "const": "referenced-by-path-and-sha256" },
+        "transcript_is_evidence": { "const": false },
+        "missing_or_unreproducible": { "const": "needs-reconstruction" }
+      }
+    }
+  },
+  "$defs": {
+    "nonEmptyStrings": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    }
+  }
+}

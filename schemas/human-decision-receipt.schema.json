@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.johan-sdd.dev/human-decision-receipt/v1",
+  "title": "Human profile-downgrade decision receipt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "receipt_id", "decision", "recorded_at", "work_ref", "from_profile", "to_profile", "hard_trigger_refs", "human", "rationale"],
+  "properties": {
+    "schema_version": { "const": "johan-sdd/human-decision-receipt/v1" },
+    "receipt_id": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$" },
+    "decision": { "const": "profile-downgrade" },
+    "recorded_at": { "type": "string", "format": "date-time" },
+    "work_ref": { "$ref": "#/$defs/hashedRef" },
+    "from_profile": { "const": "full" },
+    "to_profile": { "const": "lean" },
+    "hard_trigger_refs": { "type": "array", "maxItems": 0, "items": { "$ref": "#/$defs/hashedRef" } },
+    "human": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["actor_id", "confirmed_at"],
+      "properties": {
+        "actor_id": { "type": "string", "pattern": "^human:[A-Za-z0-9][A-Za-z0-9._:-]*$" },
+        "confirmed_at": { "type": "string", "format": "date-time" }
+      }
+    },
+    "rationale": { "type": "string", "minLength": 1 }
+  },
+  "$defs": {
+    "portableRef": { "type": "string", "pattern": "^[a-z][a-z0-9-]*:[A-Za-z0-9][A-Za-z0-9._:/@+=-]*$" },
+    "hashedRef": {
+      "type": "object", "additionalProperties": false, "required": ["ref", "sha256"],
+      "properties": { "ref": { "$ref": "#/$defs/portableRef" }, "sha256": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" } }
+    }
+  }
+}

@@ -1,0 +1,18 @@
+schema_version = "codex-onboarding/v1"
+taxonomy_authority = "host-managed"
+
+node_id = "personal-project-johan-sdd"
+node_type = "personal-project"
+context_boundary = "personal"
+workspace = "johan-sdd"
+parent_id = "personal-dev-root"
+
+wsl_required = false
+project_type = "public-python-uv"
+runtime_toolchain = "Python 3.11 with uv"
+github_expected_login = "johansabent"
+remote_status = "absent"
+connector_identity_note = "Personal project. No connector, plugin, or MCP is enabled by this bootstrap; prove provider identity before authenticated action."
+repo_write_gate = "Before non-trivial work, inspect instructions and Git/worktree state; only the root coordinator controls multi-agent worktrees and human gates."
+integration_core_boundary = "The integration core emits desired state and must never write directly to an agent home; .agents is agent-owned metadata."
+skill_pin_boundary = "No Spec Kit or Matt skill tree is installed by this bootstrap; future pins require source, revision, hash, owner, and verification."

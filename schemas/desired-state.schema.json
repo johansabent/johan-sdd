@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.johan-sdd.dev/desired-state/v1",
+  "title": "Portable host desired state",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "target_id",
+    "generated_from",
+    "trust_root_sha256",
+    "allowlist_sha256",
+    "operations"
+  ],
+  "properties": {
+    "schema_version": { "const": "johan-sdd/desired-state/v1" },
+    "target_id": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$" },
+    "generated_from": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "trust_root_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "allowlist_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "operations": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/operation" }
+    }
+  },
+  "$defs": {
+    "operation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "action"],
+      "properties": {
+        "path": { "type": "string", "minLength": 1 },
+        "action": { "enum": ["create", "replace", "remove"] },
+        "content_ref": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "action": { "enum": ["create", "replace"] } }, "required": ["action"] },
+          "then": { "required": ["content_ref"] }
+        },
+        {
+          "if": { "properties": { "action": { "const": "remove" } }, "required": ["action"] },
+          "then": { "not": { "required": ["content_ref"] } }
+        }
+      ]
+    }
+  }
+}

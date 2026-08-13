@@ -1,0 +1,29 @@
+{
+  "$schema": "../schemas/upstreams-lock.schema.json",
+  "schema_version": "johan-sdd/upstreams-lock/v1",
+  "upstreams": [
+    {
+      "id": "github-spec-kit",
+      "owner": "github",
+      "repository": "spec-kit",
+      "source": "https://github.com/github/spec-kit",
+      "version": "v0.16.3",
+      "tag_object": "0a5ee5b25d0b4e08425c23f0633197cb33fe8c74",
+      "peeled_commit": "b85aaeda4a7aec37a6620bba9d77ab37c6589141",
+      "license": "MIT",
+      "role": "delivery-spine"
+    },
+    {
+      "id": "matt-pocock-skills",
+      "owner": "mattpocock",
+      "repository": "skills",
+      "source": "https://github.com/mattpocock/skills",
+      "version": "v1.2.3",
+      "tag_object": "835450ef244ab7335f75d95b83e7d979eae22a6d",
+      "peeled_commit": "6acc160e4e0cd062dbbbd7a1b26ae92855edf07e",
+      "license": "MIT",
+      "role": "engineering-flow-modules"
+    }
+  ]
+}
+

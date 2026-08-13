@@ -1,0 +1,397 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.johan-sdd.dev/authority-decision/v1",
+  "title": "Derived immutable lifecycle authority decision",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "decision_id",
+    "revision",
+    "session",
+    "marker_observation",
+    "readiness",
+    "derivation",
+    "decision",
+    "immutability"
+  ],
+  "properties": {
+    "schema_version": { "const": "johan-sdd/authority-decision/v1" },
+    "decision_id": { "type": "string", "pattern": "^authority_[0-9a-f]{64}$", "readOnly": true },
+    "revision": { "type": "integer", "minimum": 1, "readOnly": true },
+    "session": { "$ref": "#/$defs/session" },
+    "marker_observation": { "$ref": "#/$defs/marker_observation" },
+    "readiness": { "$ref": "#/$defs/readiness" },
+    "derivation": { "$ref": "#/$defs/derivation" },
+    "decision": { "$ref": "#/$defs/decision", "readOnly": true },
+    "immutability": { "const": "immutable_append_only_receipt", "readOnly": true }
+  },
+  "oneOf": [
+    { "$ref": "#/$defs/no_marker_decision" },
+    { "$ref": "#/$defs/blocked_decision" },
+    { "$ref": "#/$defs/buzz_decision" },
+    { "$ref": "#/$defs/fallback_decision" },
+    { "$ref": "#/$defs/pre_cutover_continuation" },
+    { "$ref": "#/$defs/blocked_continuation" },
+    { "$ref": "#/$defs/buzz_continuation" },
+    { "$ref": "#/$defs/fallback_continuation" }
+  ],
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$"
+    },
+    "session": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["session_id", "started_at", "decision_stage", "relation_to_cutover"],
+      "properties": {
+        "session_id": { "type": "string", "minLength": 1, "readOnly": true },
+        "started_at": { "$ref": "#/$defs/timestamp" },
+        "decision_stage": { "enum": ["initial_enrollment", "continuation"] },
+        "relation_to_cutover": {
+          "enum": ["no_marker_observed", "started_before_cutover", "started_at_or_after_cutover"]
+        },
+        "original_decision_ref": { "type": "string", "pattern": "^authority:[0-9a-f]{64}$" },
+        "original_mode": {
+          "enum": [
+            "pre_cutover_json_authority",
+            "blocked_authority_transition",
+            "post_cutover_buzz_authority",
+            "post_cutover_fallback_evidence"
+          ]
+        },
+        "original_sink": {
+          "enum": ["session_artifact_v1", "none", "buzz_event", "noncanonical_fallback_ledger"]
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "decision_stage": { "const": "initial_enrollment" } },
+            "required": ["decision_stage"]
+          },
+          "then": {
+            "not": {
+              "anyOf": [
+                { "required": ["original_decision_ref"] },
+                { "required": ["original_mode"] },
+                { "required": ["original_sink"] }
+              ]
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": { "decision_stage": { "const": "continuation" } },
+            "required": ["decision_stage"]
+          },
+          "then": { "required": ["original_decision_ref", "original_mode", "original_sink"] }
+        }
+      ]
+    },
+    "marker_observation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["state"],
+      "properties": {
+        "state": { "enum": ["absent", "present"] },
+        "marker_id": { "type": "string", "pattern": "^cutover_[0-9a-f]{64}$" },
+        "marker_revision": { "type": "integer", "minimum": 1 },
+        "marker_sha256": { "$ref": "#/$defs/sha256" },
+        "cutover_at": { "$ref": "#/$defs/timestamp" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "state": { "const": "present" } }, "required": ["state"] },
+          "then": { "required": ["marker_id", "marker_revision", "marker_sha256", "cutover_at"] }
+        },
+        {
+          "if": { "properties": { "state": { "const": "absent" } }, "required": ["state"] },
+          "then": {
+            "not": {
+              "anyOf": [
+                { "required": ["marker_id"] },
+                { "required": ["marker_revision"] },
+                { "required": ["marker_sha256"] },
+                { "required": ["cutover_at"] }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "readiness": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["buzz", "transition_health"],
+      "properties": {
+        "buzz": { "enum": ["ready", "unavailable"] },
+        "transition_health": { "enum": ["healthy", "blocked"] }
+      }
+    },
+    "derivation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["derived_at", "inputs_sha256", "caller_override", "reason"],
+      "properties": {
+        "derived_at": { "$ref": "#/$defs/timestamp" },
+        "inputs_sha256": { "$ref": "#/$defs/sha256" },
+        "caller_override": { "const": false },
+        "reason": {
+          "enum": [
+            "no_cutover_marker_observed",
+            "enrolled_authority_continuity",
+            "transition_blocked",
+            "buzz_ready",
+            "buzz_unavailable"
+          ]
+        }
+      }
+    },
+    "decision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "sink"],
+      "properties": {
+        "mode": {
+          "enum": [
+            "pre_cutover_json_authority",
+            "blocked_authority_transition",
+            "post_cutover_buzz_authority",
+            "post_cutover_fallback_evidence"
+          ]
+        },
+        "sink": {
+          "enum": ["session_artifact_v1", "none", "buzz_event", "noncanonical_fallback_ledger"]
+        }
+      }
+    },
+    "no_marker_decision": {
+      "properties": {
+        "session": {
+          "properties": {
+            "decision_stage": { "const": "initial_enrollment" },
+            "relation_to_cutover": { "const": "no_marker_observed" }
+          },
+          "required": ["decision_stage", "relation_to_cutover"]
+        },
+        "marker_observation": {
+          "properties": { "state": { "const": "absent" } },
+          "required": ["state"]
+        },
+        "derivation": {
+          "properties": { "reason": { "const": "no_cutover_marker_observed" } },
+          "required": ["reason"]
+        },
+        "decision": {
+          "properties": {
+            "mode": { "const": "pre_cutover_json_authority" },
+            "sink": { "const": "session_artifact_v1" }
+          },
+          "required": ["mode", "sink"]
+        }
+      }
+    },
+    "pre_cutover_continuation": {
+      "properties": {
+        "session": {
+          "properties": {
+            "decision_stage": { "const": "continuation" },
+            "relation_to_cutover": {
+              "enum": ["no_marker_observed", "started_before_cutover"]
+            },
+            "original_mode": { "const": "pre_cutover_json_authority" },
+            "original_sink": { "const": "session_artifact_v1" }
+          },
+          "required": ["decision_stage", "relation_to_cutover", "original_mode", "original_sink"]
+        },
+        "derivation": {
+          "properties": { "reason": { "const": "enrolled_authority_continuity" } },
+          "required": ["reason"]
+        },
+        "decision": {
+          "properties": {
+            "mode": { "const": "pre_cutover_json_authority" },
+            "sink": { "const": "session_artifact_v1" }
+          },
+          "required": ["mode", "sink"]
+        }
+      }
+    },
+    "blocked_decision": {
+      "properties": {
+        "session": {
+          "properties": {
+            "decision_stage": { "const": "initial_enrollment" },
+            "relation_to_cutover": { "const": "started_at_or_after_cutover" }
+          },
+          "required": ["decision_stage", "relation_to_cutover"]
+        },
+        "marker_observation": {
+          "properties": { "state": { "const": "present" } },
+          "required": ["state"]
+        },
+        "readiness": {
+          "properties": { "transition_health": { "const": "blocked" } },
+          "required": ["transition_health"]
+        },
+        "derivation": {
+          "properties": { "reason": { "const": "transition_blocked" } },
+          "required": ["reason"]
+        },
+        "decision": {
+          "properties": {
+            "mode": { "const": "blocked_authority_transition" },
+            "sink": { "const": "none" }
+          },
+          "required": ["mode", "sink"]
+        }
+      }
+    },
+    "buzz_decision": {
+      "properties": {
+        "session": {
+          "properties": {
+            "decision_stage": { "const": "initial_enrollment" },
+            "relation_to_cutover": { "const": "started_at_or_after_cutover" }
+          },
+          "required": ["decision_stage", "relation_to_cutover"]
+        },
+        "marker_observation": {
+          "properties": { "state": { "const": "present" } },
+          "required": ["state"]
+        },
+        "readiness": {
+          "properties": {
+            "buzz": { "const": "ready" },
+            "transition_health": { "const": "healthy" }
+          },
+          "required": ["buzz", "transition_health"]
+        },
+        "derivation": {
+          "properties": { "reason": { "const": "buzz_ready" } },
+          "required": ["reason"]
+        },
+        "decision": {
+          "properties": {
+            "mode": { "const": "post_cutover_buzz_authority" },
+            "sink": { "const": "buzz_event" }
+          },
+          "required": ["mode", "sink"]
+        }
+      }
+    },
+    "fallback_decision": {
+      "properties": {
+        "session": {
+          "properties": {
+            "decision_stage": { "const": "initial_enrollment" },
+            "relation_to_cutover": { "const": "started_at_or_after_cutover" }
+          },
+          "required": ["decision_stage", "relation_to_cutover"]
+        },
+        "marker_observation": {
+          "properties": { "state": { "const": "present" } },
+          "required": ["state"]
+        },
+        "readiness": {
+          "properties": {
+            "buzz": { "const": "unavailable" },
+            "transition_health": { "const": "healthy" }
+          },
+          "required": ["buzz", "transition_health"]
+        },
+        "derivation": {
+          "properties": { "reason": { "const": "buzz_unavailable" } },
+          "required": ["reason"]
+        },
+        "decision": {
+          "properties": {
+            "mode": { "const": "post_cutover_fallback_evidence" },
+            "sink": { "const": "noncanonical_fallback_ledger" }
+          },
+          "required": ["mode", "sink"]
+        }
+      }
+    },
+    "blocked_continuation": {
+      "$ref": "#/$defs/continuation_base",
+      "properties": {
+        "session": {
+          "properties": {
+            "original_mode": { "const": "blocked_authority_transition" },
+            "original_sink": { "const": "none" }
+          }
+        },
+        "decision": {
+          "properties": {
+            "mode": { "const": "blocked_authority_transition" },
+            "sink": { "const": "none" }
+          }
+        }
+      }
+    },
+    "buzz_continuation": {
+      "$ref": "#/$defs/continuation_base",
+      "properties": {
+        "session": {
+          "properties": {
+            "original_mode": { "const": "post_cutover_buzz_authority" },
+            "original_sink": { "const": "buzz_event" }
+          }
+        },
+        "decision": {
+          "properties": {
+            "mode": { "const": "post_cutover_buzz_authority" },
+            "sink": { "const": "buzz_event" }
+          }
+        }
+      }
+    },
+    "fallback_continuation": {
+      "$ref": "#/$defs/continuation_base",
+      "properties": {
+        "session": {
+          "properties": {
+            "original_mode": { "const": "post_cutover_fallback_evidence" },
+            "original_sink": { "const": "noncanonical_fallback_ledger" }
+          }
+        },
+        "decision": {
+          "properties": {
+            "mode": { "const": "post_cutover_fallback_evidence" },
+            "sink": { "const": "noncanonical_fallback_ledger" }
+          }
+        }
+      }
+    },
+    "continuation_base": {
+      "properties": {
+        "session": {
+          "properties": {
+            "decision_stage": { "const": "continuation" },
+            "relation_to_cutover": { "const": "started_at_or_after_cutover" }
+          },
+          "required": [
+            "decision_stage",
+            "relation_to_cutover",
+            "original_decision_ref",
+            "original_mode",
+            "original_sink"
+          ]
+        },
+        "marker_observation": {
+          "properties": { "state": { "const": "present" } },
+          "required": ["state"]
+        },
+        "derivation": {
+          "properties": { "reason": { "const": "enrolled_authority_continuity" } },
+          "required": ["reason"]
+        }
+      }
+    }
+  }
+}

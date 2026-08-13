@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.johan-sdd.dev/evidence-artifact/v1",
+  "title": "Reconstructable portable evidence artifact",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "artifact_id", "kind", "produced_at", "subject", "reconstruction"],
+  "properties": {
+    "schema_version": { "const": "johan-sdd/evidence-artifact/v1" },
+    "artifact_id": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$" },
+    "kind": { "enum": ["slice-manifest", "session-capture", "handoff-manifest", "closeout-receipt", "update-manifest", "rollback-receipt"] },
+    "produced_at": { "type": "string", "format": "date-time" },
+    "subject": { "$ref": "#/$defs/hashedRef" },
+    "reconstruction": {
+      "type": "object", "additionalProperties": false, "required": ["inputs", "commands", "outputs"],
+      "properties": {
+        "inputs": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/hashedRef" } },
+        "commands": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/command" } },
+        "outputs": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/hashedRef" } }
+      }
+    }
+  },
+  "$defs": {
+    "portableRef": { "type": "string", "pattern": "^[a-z][a-z0-9-]*:[A-Za-z0-9][A-Za-z0-9._:/@+=-]*$" },
+    "hashedRef": {
+      "type": "object", "additionalProperties": false, "required": ["ref", "sha256"],
+      "properties": { "ref": { "$ref": "#/$defs/portableRef" }, "sha256": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" } }
+    },
+    "command": {
+      "type": "object", "additionalProperties": false, "required": ["argv", "exit_code", "output"],
+      "properties": {
+        "argv": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+        "exit_code": { "type": "integer", "minimum": 0 },
+        "output": { "$ref": "#/$defs/hashedRef" }
+      }
+    }
+  }
+}

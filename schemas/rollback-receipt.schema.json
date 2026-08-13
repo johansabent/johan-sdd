@@ -1,0 +1,166 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.johan-sdd.dev/rollback-receipt/v1",
+  "title": "Exact update rollback receipt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "rollback_id",
+    "update",
+    "snapshots",
+    "readback",
+    "terminal_status",
+    "terminal_at"
+  ],
+  "properties": {
+    "schema_version": { "const": "johan-sdd/rollback-receipt/v1" },
+    "rollback_id": { "type": "string", "pattern": "^rollback_[0-9a-f]{64}$", "readOnly": true },
+    "update": { "$ref": "#/$defs/failed_update" },
+    "snapshots": { "$ref": "#/$defs/snapshots" },
+    "readback": { "$ref": "#/$defs/readback" },
+    "terminal_status": { "enum": ["rolled_back", "rollback_failed"] },
+    "terminal_at": { "$ref": "#/$defs/timestamp" },
+    "error": { "$ref": "#/$defs/error" }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": { "terminal_status": { "const": "rolled_back" } },
+        "required": ["terminal_status"]
+      },
+      "then": {
+        "properties": {
+          "readback": {
+            "properties": {
+              "status": { "const": "passed" },
+              "components": {
+                "properties": {
+                  "content": { "properties": { "status": { "const": "matched" } } },
+                  "pins": { "properties": { "status": { "const": "matched" } } },
+                  "manifest": { "properties": { "status": { "const": "matched" } } }
+                }
+              }
+            }
+          }
+        },
+        "not": { "required": ["error"] }
+      }
+    },
+    {
+      "if": {
+        "properties": { "terminal_status": { "const": "rollback_failed" } },
+        "required": ["terminal_status"]
+      },
+      "then": {
+        "required": ["error"],
+        "properties": {
+          "readback": { "properties": { "status": { "const": "failed" } } }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$"
+    },
+    "receipt_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ref", "sha256"],
+      "properties": {
+        "ref": { "type": "string", "pattern": "^receipts/[A-Za-z0-9._/-]+\\.json$" },
+        "sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "evidence_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ref", "sha256"],
+      "properties": {
+        "ref": { "type": "string", "pattern": "^evidence/[A-Za-z0-9._/-]+\\.json$" },
+        "sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "failed_update": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "update_id",
+        "update_manifest",
+        "failed_apply_receipt",
+        "failed_phase",
+        "failed_at"
+      ],
+      "properties": {
+        "update_id": { "type": "string", "pattern": "^update_[0-9a-f]{64}$" },
+        "update_manifest": { "$ref": "#/$defs/receipt_ref" },
+        "failed_apply_receipt": { "$ref": "#/$defs/receipt_ref" },
+        "failed_phase": { "enum": ["preview", "apply", "readback"] },
+        "failed_at": { "$ref": "#/$defs/timestamp" }
+      }
+    },
+    "hash_snapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["content_sha256", "pins_sha256", "manifest_sha256"],
+      "properties": {
+        "content_sha256": { "$ref": "#/$defs/sha256" },
+        "pins_sha256": { "$ref": "#/$defs/sha256" },
+        "manifest_sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "snapshots": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["pre_update", "failed_update", "post_rollback"],
+      "properties": {
+        "pre_update": { "$ref": "#/$defs/hash_snapshot" },
+        "failed_update": { "$ref": "#/$defs/hash_snapshot" },
+        "post_rollback": { "$ref": "#/$defs/hash_snapshot" }
+      }
+    },
+    "component_readback": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["expected_preupdate_sha256", "observed_postrollback_sha256", "status"],
+      "properties": {
+        "expected_preupdate_sha256": { "$ref": "#/$defs/sha256" },
+        "observed_postrollback_sha256": { "$ref": "#/$defs/sha256" },
+        "status": { "enum": ["matched", "mismatched"] }
+      }
+    },
+    "readback": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["completed_at", "status", "components", "evidence"],
+      "properties": {
+        "completed_at": { "$ref": "#/$defs/timestamp" },
+        "status": { "enum": ["passed", "failed"] },
+        "components": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["content", "pins", "manifest"],
+          "properties": {
+            "content": { "$ref": "#/$defs/component_readback" },
+            "pins": { "$ref": "#/$defs/component_readback" },
+            "manifest": { "$ref": "#/$defs/component_readback" }
+          }
+        },
+        "evidence": { "$ref": "#/$defs/evidence_ref" }
+      }
+    },
+    "error": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "message"],
+      "properties": {
+        "code": { "type": "string", "minLength": 1 },
+        "message": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

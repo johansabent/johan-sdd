@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.johan-sdd.dev/promotion-request/v1",
+  "title": "Capture promotion request",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "request_id",
+    "capture_id",
+    "packet_sha256",
+    "generator_actor_id",
+    "promoter",
+    "authority",
+    "lock",
+    "target",
+    "phase"
+  ],
+  "properties": {
+    "schema_version": { "const": "johan-sdd/promotion-request/v1" },
+    "request_id": { "type": "string", "pattern": "^promotion_[0-9a-f]{64}$" },
+    "capture_id": { "type": "string", "pattern": "^cap_[0-9a-f]{64}$" },
+    "packet_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "generator_actor_id": { "type": "string", "minLength": 1 },
+    "promoter": { "$ref": "#/$defs/promoter" },
+    "authority": { "$ref": "#/$defs/authority" },
+    "lock": { "$ref": "#/$defs/lock" },
+    "target": { "$ref": "#/$defs/target" },
+    "phase": { "const": "prepared" }
+  },
+  "$defs": {
+    "promoter": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["actor_id", "policy_id", "policy_revision", "policy_sha256"],
+      "properties": {
+        "actor_id": { "type": "string", "minLength": 1 },
+        "policy_id": { "type": "string", "minLength": 1 },
+        "policy_revision": { "type": "integer", "minimum": 1 },
+        "policy_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+      }
+    },
+    "authority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["revision", "decision_ref", "decision_sha256", "mode", "sink"],
+      "properties": {
+        "revision": { "type": "integer", "minimum": 1 },
+        "decision_ref": { "type": "string", "minLength": 1 },
+        "decision_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "mode": { "enum": ["pre_cutover_json_authority", "blocked_authority_transition", "post_cutover_buzz_authority", "post_cutover_fallback_evidence"] },
+        "sink": { "enum": ["session_artifact_v1", "buzz_event", "noncanonical_fallback_ledger", "none"] }
+      }
+    },
+    "lock": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["lock_id", "fencing_token", "acquired_at"],
+      "properties": {
+        "lock_id": { "type": "string", "minLength": 1 },
+        "fencing_token": { "type": "integer", "minimum": 1 },
+        "acquired_at": { "type": "string", "format": "date-time", "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$" }
+      }
+    },
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["target_id", "preimage_digest", "next_digest"],
+      "properties": {
+        "target_id": { "type": "string", "minLength": 1 },
+        "preimage_digest": { "oneOf": [{ "const": "absent" }, { "type": "string", "pattern": "^[0-9a-f]{64}$" }] },
+        "next_digest": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+      }
+    }
+  }
+}

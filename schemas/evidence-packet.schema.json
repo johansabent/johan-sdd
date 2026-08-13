@@ -1,0 +1,146 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.johan-sdd.dev/evidence-packet/v1",
+  "title": "Compaction-resistant evidence packet",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "event_type",
+    "work_id",
+    "agent",
+    "git",
+    "worktree_ref",
+    "claim_ref",
+    "contracts",
+    "changes",
+    "verification",
+    "artifacts",
+    "logs",
+    "decisions",
+    "risks",
+    "next"
+  ],
+  "properties": {
+    "schema_version": { "const": "johan-sdd/evidence-packet/v1" },
+    "event_type": { "enum": ["slice", "pause", "handoff", "close", "update", "rollback"] },
+    "work_id": { "type": "string", "minLength": 1 },
+    "agent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "model"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "model": { "type": "string", "minLength": 1 }
+      }
+    },
+    "git": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["base_sha", "final_sha"],
+      "properties": {
+        "base_sha": { "type": "string", "pattern": "^[0-9a-f]{40,64}$" },
+        "final_sha": { "type": "string", "pattern": "^[0-9a-f]{40,64}$" }
+      }
+    },
+    "worktree_ref": { "type": "string", "minLength": 1 },
+    "claim_ref": { "type": "string", "minLength": 1 },
+    "contracts": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/hashedRef" }
+    },
+    "changes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "sha256", "summary"],
+        "properties": {
+          "path": { "type": "string", "minLength": 1 },
+          "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+          "summary": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "verification": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["command", "exit_code", "result", "log_ref"],
+        "properties": {
+          "command": { "type": "string", "minLength": 1 },
+          "exit_code": { "type": "integer" },
+          "result": { "type": "string", "minLength": 1 },
+          "log_ref": { "$ref": "#/$defs/hashedRef" }
+        }
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["kind", "ref", "sha256"],
+        "properties": {
+          "kind": { "enum": ["slice-manifest", "session-capture", "handoff-manifest", "closeout-receipt", "update-manifest", "rollback-receipt"] },
+          "ref": { "type": "string", "minLength": 1 },
+          "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+        }
+      }
+    },
+    "logs": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/hashedRef" }
+    },
+    "decisions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["decision", "rationale"],
+        "properties": {
+          "decision": { "type": "string", "minLength": 1 },
+          "rationale": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "risks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["risk", "mitigation"],
+        "properties": {
+          "risk": { "type": "string", "minLength": 1 },
+          "mitigation": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "next": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["consumer", "action"],
+      "properties": {
+        "consumer": { "type": "string", "minLength": 1 },
+        "action": { "type": "string", "minLength": 1 }
+      }
+    }
+  },
+  "$defs": {
+    "hashedRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ref", "sha256"],
+      "properties": {
+        "ref": { "type": "string", "minLength": 1 },
+        "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+      }
+    }
+  }
+}

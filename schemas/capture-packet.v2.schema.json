@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.johan-sdd.dev/capture-packet/v2",
+  "title": "Non-canonical lifecycle capture packet v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "capture_id",
+    "packet_digest",
+    "session_id",
+    "lifecycle_cursor",
+    "generator",
+    "authority_decision",
+    "payload"
+  ],
+  "properties": {
+    "schema_version": { "const": "johan-sdd/capture-packet/v2" },
+    "capture_id": { "type": "string", "pattern": "^cap_[0-9a-f]{64}$" },
+    "packet_digest": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "session_id": { "type": "string", "minLength": 1 },
+    "lifecycle_cursor": { "type": "string", "pattern": "^[0-9]{8,20}$" },
+    "generator": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["actor_id", "agent", "model"],
+      "properties": {
+        "actor_id": { "type": "string", "minLength": 1 },
+        "agent": { "type": "string", "minLength": 1 },
+        "model": { "type": "string", "minLength": 1 }
+      }
+    },
+    "authority_decision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["decision_ref", "decision_sha256"],
+      "properties": {
+        "decision_ref": { "type": "string", "minLength": 1 },
+        "decision_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+      }
+    },
+    "payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["event_type", "occurred_at", "summary", "next_action", "evidence_refs"],
+      "properties": {
+        "event_type": { "enum": ["starting", "working", "paused", "blocked", "closing", "closed", "abandoned"] },
+        "occurred_at": { "type": "string", "format": "date-time", "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$" },
+        "summary": { "type": "string", "minLength": 1, "maxLength": 1000 },
+        "next_action": { "type": "string", "minLength": 1, "maxLength": 1000 },
+        "evidence_refs": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" }
+        }
+      }
+    }
+  }
+}

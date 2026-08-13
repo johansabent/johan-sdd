@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.johan-sdd.dev/micro-assessment/v1",
+  "title": "Deterministic micro-lane assessment",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "assessment_id", "repository_ref", "base_ref", "preflight", "counting", "changes", "change_kinds", "observed_surfaces", "verdict"],
+  "properties": {
+    "schema_version": { "const": "johan-sdd/micro-assessment/v1" },
+    "assessment_id": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$" },
+    "repository_ref": { "$ref": "#/$defs/hashedRef" },
+    "base_ref": { "$ref": "#/$defs/hashedRef" },
+    "preflight": {
+      "type": "object", "additionalProperties": false,
+      "required": ["primary_checkout", "working_tree_clean"],
+      "properties": {
+        "primary_checkout": { "type": "boolean" },
+        "working_tree_clean": { "type": "boolean" }
+      }
+    },
+    "counting": {
+      "type": "object", "additionalProperties": false,
+      "required": ["line_formula", "rename_rule", "deletion_rule"],
+      "properties": {
+        "line_formula": { "const": "additions-plus-deletions" },
+        "rename_rule": { "const": "count-source-and-destination-lines-as-deletion-and-addition" },
+        "deletion_rule": { "const": "count-deleted-path-and-deleted-lines" }
+      }
+    },
+    "changes": {
+      "type": "object", "additionalProperties": false,
+      "required": ["files_changed", "additions", "deletions", "changed_lines"],
+      "properties": {
+        "files_changed": { "type": "integer", "minimum": 0 },
+        "additions": { "type": "integer", "minimum": 0 },
+        "deletions": { "type": "integer", "minimum": 0 },
+        "changed_lines": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "change_kinds": {
+      "type": "array", "minItems": 1, "uniqueItems": true,
+      "items": { "enum": ["add", "modify", "delete", "rename"] }
+    },
+    "observed_surfaces": {
+      "type": "array", "minItems": 1, "uniqueItems": true,
+      "items": { "enum": ["documentation", "non-operational-configuration", "code", "schema", "hooks", "workflows", "identity", "security", "public-contracts", "tracker"] }
+    },
+    "verdict": { "enum": ["admitted", "promote-to-feature"] }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "verdict": { "const": "admitted" } }, "required": ["verdict"] },
+      "then": {
+        "properties": {
+          "changes": { "properties": { "files_changed": { "maximum": 3 }, "changed_lines": { "maximum": 50 } } },
+          "preflight": {
+            "properties": {
+              "primary_checkout": { "const": true },
+              "working_tree_clean": { "const": true }
+            }
+          },
+          "change_kinds": { "items": { "enum": ["add", "modify"] } },
+          "observed_surfaces": { "items": { "enum": ["documentation", "non-operational-configuration"] } }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "portableRef": { "type": "string", "pattern": "^[a-z][a-z0-9-]*:[A-Za-z0-9][A-Za-z0-9._:/@+=-]*$" },
+    "hashedRef": {
+      "type": "object", "additionalProperties": false, "required": ["ref", "sha256"],
+      "properties": { "ref": { "$ref": "#/$defs/portableRef" }, "sha256": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" } }
+    }
+  }
+}

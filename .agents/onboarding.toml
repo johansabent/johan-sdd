@@ -1,0 +1,53 @@
+schema_version = "agent-project-onboarding/v1"
+taxonomy_authority = "host-managed"
+
+[identity]
+company = ""
+project = "johan-sdd"
+status = "draft"
+
+[taxonomy]
+node_id = "personal-project-johan-sdd"
+node_type = "personal-project"
+context_boundary = "personal"
+workspace = "johan-sdd"
+parent_id = "personal-dev-root"
+
+[accounts]
+github = "johansabent"
+linear = ""
+gmail = ""
+drive = ""
+calendar = ""
+notes = "Personal project. Prove provider-native identity before every authenticated action. No remote exists at bootstrap."
+
+[capability_selection]
+decision_status = "pending"
+inherit_to_children = false
+keep_enabled = []
+keep_disabled = []
+pending_install = []
+pending_connection = []
+exclusive_modes = []
+notes = "No plugin, MCP, connector, or exhaustive skill surface is enabled by this bootstrap."
+
+[project_docs]
+agents_doc = "AGENTS.md"
+context_doc = "CONTEXT.md"
+state_doc = "STATE.md"
+notes = "AGENTS.md owns evergreen rules; CONTEXT.md owns domain language; STATE.md is current orientation."
+
+[capability_policy]
+routing = "hub-first"
+entrypoints = ["using-johan-skills", "ask-matt", "project-onboarding"]
+notes = "Resolve phase modules from live host policy; user-invoked routes remain user-invoked."
+
+[wsl]
+required = false
+distro = ""
+paths = []
+
+[tool_overlays]
+shared = ".agents"
+codex = ".codex"
+claude = ".claude"

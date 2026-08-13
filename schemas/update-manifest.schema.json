@@ -1,0 +1,267 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.johan-sdd.dev/update-manifest/v1",
+  "title": "Pinned upstream update manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "update_id",
+    "created_at",
+    "target",
+    "current",
+    "candidate",
+    "bindings",
+    "authority_delta",
+    "canaries",
+    "apply"
+  ],
+  "properties": {
+    "schema_version": { "const": "johan-sdd/update-manifest/v1" },
+    "update_id": { "type": "string", "pattern": "^update_[0-9a-f]{64}$", "readOnly": true },
+    "created_at": { "$ref": "#/$defs/timestamp" },
+    "target": { "$ref": "#/$defs/target" },
+    "current": { "$ref": "#/$defs/pin_set" },
+    "candidate": { "$ref": "#/$defs/pin_set" },
+    "bindings": { "$ref": "#/$defs/bindings" },
+    "authority_delta": { "$ref": "#/$defs/authority_delta" },
+    "canaries": { "$ref": "#/$defs/canaries" },
+    "apply": { "$ref": "#/$defs/apply" }
+  },
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "git_sha": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$"
+    },
+    "receipt_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ref", "sha256"],
+      "properties": {
+        "ref": { "type": "string", "pattern": "^receipts/[A-Za-z0-9._/-]+\\.json$" },
+        "sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["target_id", "status", "disposable_worktree"],
+      "properties": {
+        "target_id": { "type": "string", "minLength": 1 },
+        "status": { "const": "clean" },
+        "disposable_worktree": { "const": true }
+      }
+    },
+    "pin_set": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["manifest_sha256", "pins_sha256", "upstreams"],
+      "properties": {
+        "manifest_sha256": { "$ref": "#/$defs/sha256" },
+        "pins_sha256": { "$ref": "#/$defs/sha256" },
+        "upstreams": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/immutable_pin" }
+        }
+      },
+      "readOnly": true
+    },
+    "immutable_pin": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "source",
+        "version",
+        "reference_type",
+        "tag_object",
+        "peeled_commit",
+        "anchored_in_trust_root",
+        "trust_root_entry_sha256",
+        "immutability"
+      ],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "source": { "type": "string", "format": "uri", "pattern": "^https://github\\.com/" },
+        "version": { "type": "string", "pattern": "^v[0-9]+\\.[0-9]+\\.[0-9]+$" },
+        "reference_type": { "const": "annotated_tag" },
+        "tag_object": { "$ref": "#/$defs/git_sha" },
+        "peeled_commit": { "$ref": "#/$defs/git_sha" },
+        "anchored_in_trust_root": { "const": true },
+        "trust_root_entry_sha256": { "$ref": "#/$defs/sha256" },
+        "immutability": { "const": "immutable_tag_object_and_peeled_commit", "readOnly": true }
+      }
+    },
+    "bindings": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["trust_root", "allowlist", "prestate"],
+      "properties": {
+        "trust_root": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["path", "sha256"],
+          "properties": {
+            "path": { "const": "manifests/upstreams.lock.json" },
+            "sha256": { "$ref": "#/$defs/sha256" }
+          }
+        },
+        "allowlist": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["sha256", "entries"],
+          "properties": {
+            "sha256": { "$ref": "#/$defs/sha256" },
+            "entries": {
+              "const": [
+                "pinned-upstream-content",
+                "product-owned-adapters",
+                "product-owned-presets",
+                "registered-repository-generated-overlays"
+              ]
+            }
+          }
+        },
+        "prestate": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["content_sha256", "pins_sha256", "manifest_sha256"],
+          "properties": {
+            "content_sha256": { "$ref": "#/$defs/sha256" },
+            "pins_sha256": { "$ref": "#/$defs/sha256" },
+            "manifest_sha256": { "$ref": "#/$defs/sha256" }
+          }
+        }
+      }
+    },
+    "authority_delta": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "baseline_sha256",
+        "candidate_sha256",
+        "checked_fields",
+        "prohibited_changes"
+      ],
+      "properties": {
+        "status": { "const": "passed" },
+        "baseline_sha256": { "$ref": "#/$defs/sha256" },
+        "candidate_sha256": { "$ref": "#/$defs/sha256" },
+        "checked_fields": {
+          "const": [
+            "hooks",
+            "installer",
+            "host-policy",
+            "trust-root",
+            "allowlist",
+            "agent-home",
+            "permissions",
+            "runner",
+            "target-root"
+          ]
+        },
+        "prohibited_changes": { "type": "array", "maxItems": 0 }
+      }
+    },
+    "canary_result": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["result", "receipt"],
+      "properties": {
+        "result": { "const": "passed" },
+        "receipt": { "$ref": "#/$defs/receipt_ref" }
+      }
+    },
+    "canaries": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "environment",
+        "manifest_and_schema_validation",
+        "profiles",
+        "adapters",
+        "host_preview",
+        "rollback_drill"
+      ],
+      "properties": {
+        "environment": { "const": "disposable_worktree" },
+        "manifest_and_schema_validation": { "$ref": "#/$defs/canary_result" },
+        "profiles": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["lean", "full"],
+          "properties": {
+            "lean": { "$ref": "#/$defs/canary_result" },
+            "full": { "$ref": "#/$defs/canary_result" }
+          }
+        },
+        "adapters": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["codex", "claude"],
+          "properties": {
+            "codex": { "$ref": "#/$defs/canary_result" },
+            "claude": { "$ref": "#/$defs/canary_result" }
+          }
+        },
+        "host_preview": { "$ref": "#/$defs/canary_result" },
+        "rollback_drill": { "$ref": "#/$defs/canary_result" }
+      }
+    },
+    "apply": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["phase", "preview_receipt"],
+      "properties": {
+        "phase": { "enum": ["previewed", "applied", "failed", "rolled_back"] },
+        "preview_receipt": { "$ref": "#/$defs/receipt_ref" },
+        "apply_receipt": { "$ref": "#/$defs/receipt_ref" },
+        "failure_receipt": { "$ref": "#/$defs/receipt_ref" },
+        "rollback_receipt": { "$ref": "#/$defs/receipt_ref" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "phase": { "const": "previewed" } }, "required": ["phase"] },
+          "then": {
+            "not": {
+              "anyOf": [
+                { "required": ["apply_receipt"] },
+                { "required": ["failure_receipt"] },
+                { "required": ["rollback_receipt"] }
+              ]
+            }
+          }
+        },
+        {
+          "if": { "properties": { "phase": { "const": "applied" } }, "required": ["phase"] },
+          "then": {
+            "required": ["apply_receipt"],
+            "not": {
+              "anyOf": [
+                { "required": ["failure_receipt"] },
+                { "required": ["rollback_receipt"] }
+              ]
+            }
+          }
+        },
+        {
+          "if": { "properties": { "phase": { "const": "failed" } }, "required": ["phase"] },
+          "then": {
+            "required": ["apply_receipt", "failure_receipt"],
+            "not": { "required": ["rollback_receipt"] }
+          }
+        },
+        {
+          "if": { "properties": { "phase": { "const": "rolled_back" } }, "required": ["phase"] },
+          "then": { "required": ["apply_receipt", "failure_receipt", "rollback_receipt"] }
+        }
+      ]
+    }
+  }
+}

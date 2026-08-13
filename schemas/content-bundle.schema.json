@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.johan-sdd.dev/content-bundle/v1",
+  "title": "Verified portable content bundle",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "bundle_id", "generated_at", "resolver", "entries"],
+  "properties": {
+    "schema_version": { "const": "johan-sdd/content-bundle/v1" },
+    "bundle_id": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$" },
+    "generated_at": { "type": "string", "format": "date-time" },
+    "resolver": {
+      "type": "object", "additionalProperties": false, "required": ["id", "ruleset_ref"],
+      "properties": {
+        "id": { "$ref": "#/$defs/portableRef" },
+        "ruleset_ref": { "$ref": "#/$defs/hashedRef" }
+      }
+    },
+    "entries": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "#/$defs/entry" } }
+  },
+  "$defs": {
+    "portableRef": { "type": "string", "pattern": "^[a-z][a-z0-9-]*:[A-Za-z0-9][A-Za-z0-9._:/@+=-]*$" },
+    "hashedRef": {
+      "type": "object", "additionalProperties": false, "required": ["ref", "sha256"],
+      "properties": { "ref": { "$ref": "#/$defs/portableRef" }, "sha256": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" } }
+    },
+    "logicalPath": { "type": "string", "pattern": "^(?!/)(?!.*(?:^|/)\\.{1,2}(?:/|$))(?!.*//)[A-Za-z0-9][A-Za-z0-9._/-]*$" },
+    "entry": {
+      "type": "object", "additionalProperties": false,
+      "required": ["logical_path", "requested_ref", "resolved_ref", "content_sha256", "verified"],
+      "properties": {
+        "logical_path": { "$ref": "#/$defs/logicalPath" },
+        "requested_ref": { "$ref": "#/$defs/hashedRef" },
+        "resolved_ref": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+        "content_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "verified": { "const": true }
+      }
+    }
+  }
+}

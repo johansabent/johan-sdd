@@ -1,0 +1,253 @@
+{
+  "$schema": "../schemas/integration-charter.schema.json",
+  "schema_version": "johan-sdd/integration-charter/v1",
+  "contract_registry": {
+    "apply-receipt": "../schemas/apply-receipt.schema.json",
+    "authority-decision": "../schemas/authority-decision.schema.json",
+    "capture-packet.v2": "../schemas/capture-packet.v2.schema.json",
+    "cli-invocation": "../schemas/cli-invocation.schema.json",
+    "content-bundle": "../schemas/content-bundle.schema.json",
+    "cutover-marker": "../schemas/cutover-marker.schema.json",
+    "desired-state": "../schemas/desired-state.schema.json",
+    "evidence-artifact": "../schemas/evidence-artifact.schema.json",
+    "evidence-packet": "../schemas/evidence-packet.schema.json",
+    "human-decision-receipt": "../schemas/human-decision-receipt.schema.json",
+    "integration-charter": "../schemas/integration-charter.schema.json",
+    "micro-assessment": "../schemas/micro-assessment.schema.json",
+    "pause-recovery": "../schemas/pause-recovery.schema.json",
+    "preview": "../schemas/preview.schema.json",
+    "promotion-receipt": "../schemas/promotion-receipt.schema.json",
+    "promotion-request": "../schemas/promotion-request.schema.json",
+    "rollback-receipt": "../schemas/rollback-receipt.schema.json",
+    "secret-scan-receipt": "../schemas/secret-scan-receipt.schema.json",
+    "session-claims": "../schemas/session-claims.schema.json",
+    "update-manifest": "../schemas/update-manifest.schema.json",
+    "upstreams-lock": "../schemas/upstreams-lock.schema.json"
+  },
+  "product": {
+    "name": "johan-sdd",
+    "version": "0.1.0",
+    "portability": "public-host-neutral",
+    "runtime": "python>=3.11",
+    "supported_agents": ["codex", "claude"],
+    "upstreams_lock": "upstreams.lock.json",
+    "upstream_strategy": "pinned-downstream-adapters-no-fork"
+  },
+  "profiles": {
+    "default": "lean",
+    "selection": {
+      "automatic": true,
+      "explanation": "one-line-required",
+      "natural_language_override": true,
+      "override_policy": {
+        "escalation": "natural-language-always-allowed",
+        "downgrade": {
+          "requires_no_hard_trigger": true,
+          "requires_human_decision_receipt": true
+        }
+      },
+      "full_triggers": [
+        "public-contract-change",
+        "architecture-change",
+        "security-or-identity",
+        "data-migration",
+        "multi-system-coordination",
+        "destructive-or-external-effect",
+        "high-uncertainty-or-high-blast-radius"
+      ]
+    },
+    "definitions": {
+      "lean": {
+        "flow": ["specify", "clarify-if-needed", "plan", "slice", "implement", "verify", "review"],
+        "artifacts": ["spec", "plan", "tasks", "evidence"]
+      },
+      "full": {
+        "flow": ["constitution-reference", "specify", "clarify", "plan", "checklist", "analyze", "converge", "slice", "implement", "verify", "review"],
+        "artifacts": ["spec", "plan", "tasks", "checklist", "analysis", "evidence"],
+        "constitution_policy": "unique-project-principles-and-references-only"
+      }
+    }
+  },
+  "routing": {
+    "interfaces": {
+      "phase_router": "phase-router/v1",
+      "engineering_flow_hub": "engineering-flow-hub/v1"
+    },
+    "adapter": "spec-driven-delivery/v1",
+    "lanes": {
+      "micro": {
+        "owner": "delivery-envelope",
+        "admission": {
+          "max_files": 3,
+          "max_changed_lines": 50,
+          "allowed_surfaces": ["documentation", "non-operational-configuration"],
+          "forbidden_surfaces": ["code", "schema", "hooks", "workflows", "identity", "security", "public-contracts", "tracker"],
+          "uncertainty_action": "promote-to-feature"
+        },
+        "worktree": "primary-clean-checkout",
+        "dirty_pause": false,
+        "artifacts": ["verification", "compact-close-capture"],
+        "commit_gate": "explicit-local-commit"
+      },
+      "small": {
+        "owner": "engineering-flow-hub/v1",
+        "modules": ["shaping", "tdd", "diagnosis", "prototype", "review"],
+        "spec_kit_artifacts": false,
+        "mutable_worktree": "isolated-required",
+        "readonly_checkout": "primary-allowed"
+      },
+      "feature": {
+        "owner": "spec-driven-delivery/v1",
+        "spec_kit_owns": ["spec", "plan", "tasks", "implementation-orchestration"],
+        "flow_hub_owns": ["grilling", "tdd", "diagnosis", "prototype", "review"],
+        "worktree": "isolated-required"
+      }
+    },
+    "dual_write": "forbidden",
+    "tracker_authority": ["business-intent", "owner", "status"],
+    "git_artifact_authority": ["spec", "plan", "tasks", "engineering-evidence"]
+  },
+  "host_adapters": [
+    {
+      "interface": "johan-host-adapter/v1",
+      "phase_router": "using-johan-skills",
+      "engineering_flow_hub": "ask-matt"
+    }
+  ],
+  "host_integration": {
+    "product_output": "desired-state-and-preview",
+    "desired_state_schema": "../schemas/desired-state.schema.json",
+    "preview_schema": "../schemas/preview.schema.json",
+    "apply_receipt_schema": "../schemas/apply-receipt.schema.json",
+    "preview": {
+      "binds": ["desired-state-hash", "measured-pre-state-hash", "operation-list", "content-hashes"],
+      "expires_on_pre_state_change": true
+    },
+    "apply": {
+      "input": "unexpired-preview",
+      "transaction": ["snapshot", "compare-pre-state", "apply-allowlisted-operations", "verify-readback", "emit-receipt"],
+      "on_failure": "rollback-to-exact-snapshot"
+    },
+    "apply_actor": "separately-authorized-host-owner",
+    "direct_agent_home_writes": false,
+    "authority_expansion_gate": "human"
+  },
+  "sessions": {
+    "registry": {
+      "schema": "../schemas/session-claims.schema.json",
+      "schema_version": "agent-work-session/v1",
+      "location": "git-common-dir/agent-work-session.v1.json",
+      "relationship": "sibling-not-replacement-of-agent-worktree-context-v1",
+      "write_protocol": "exclusive-file-lock-plus-atomic-replace-plus-revision-cas",
+      "corrupt_or_ambiguous_action": "block-mutations-allow-inspection-and-repair",
+      "canonical_worktree_path": "resolved-case-normalized-no-trailing-separator"
+    },
+    "authority_modes": [
+      "pre_cutover_json_authority",
+      "blocked_authority_transition",
+      "post_cutover_buzz_authority",
+      "post_cutover_fallback_evidence"
+    ],
+    "authority_derivation": {
+      "caller_override": false,
+      "input": ["durable-cutover-marker", "session-start-time", "buzz-readiness", "transition-health"],
+      "pre_cutover_json_authority": "session-artifact-v1-is-the-only-lifecycle-sink",
+      "blocked_authority_transition": "no-lifecycle-write-until-transition-is-resolved",
+      "post_cutover_buzz_authority": "buzz-event-is-the-only-canonical-lifecycle-sink",
+      "post_cutover_fallback_evidence": "noncanonical-ledger-only-never-session-artifact-v1"
+    },
+    "authority_mode_cardinality": "exactly-one-derived-mode-per-lifecycle-event",
+    "cutover": "new-sessions-after-marker-use-buzz-existing-sessions-finish-in-derived-original-mode",
+    "heartbeat": {
+      "strategy": "opportunistic-debounced-no-daemon",
+      "ttl_minutes": 90,
+      "stale_proof": ["ttl-expired", "pid-and-process-start-time-not-live-or-host-unreachable"],
+      "stale_transition": "next-writer-may-mark-abandoned-with-evidence"
+    },
+    "states": ["starting", "working", "paused", "blocked", "closing", "closed", "abandoned"],
+    "resource_claims": ["repo-files", "git-metadata", "tracker", "capture", "global-agents"],
+    "resource_conflict_action": "block-mutating-operation",
+    "max_automatic_worktrees_per_repository": 3,
+    "dirty_pause": {
+      "recovery_schema": "../schemas/pause-recovery.schema.json",
+      "allowed_only": "isolated-feature-worktree",
+      "preconditions": [
+        "secret-shaped-path-and-content-scan-passed",
+        "original-head-recorded",
+        "porcelain-v2-status-sha256-recorded",
+        "untracked-nonignored-paths-recorded"
+      ],
+      "snapshot_algorithm": [
+        "create-temporary-GIT_INDEX_FILE-outside-real-index",
+        "git-read-tree-original-HEAD",
+        "git-add-A-against-entire-nonignored-worktree",
+        "git-write-tree",
+        "git-commit-tree-with-parent-original-HEAD",
+        "git-update-ref-refs/agent-sessions/session-id-to-synthetic-commit",
+        "delete-temporary-index"
+      ],
+      "must_include": ["tracked-modifications", "tracked-deletions", "untracked-nonignored-files"],
+      "must_not_touch": ["real-index", "worktree", "current-branch", "HEAD"],
+      "insufficient_methods": ["ref-to-HEAD", "git-stash-create-without-complete-untracked-tree"],
+      "protected_ref_lifetime": "until-explicit-verified-cleanup",
+      "handoff_to_different_owner": "requires-authorized-local-checkpoint-commit"
+    }
+  },
+  "capture": {
+    "packet_schema": "../schemas/capture-packet.v2.schema.json",
+    "promotion_request_schema": "../schemas/promotion-request.schema.json",
+    "promotion_receipt_schema": "../schemas/promotion-receipt.schema.json",
+    "legacy_packet_policy": "capture-packet-v1-is-not-extended",
+    "identity": {
+      "packet_digest": "sha256-rfc8785-canonical-packet-with-packet_digest-and-capture_id-omitted",
+      "capture_id": "cap_+sha256(session_id+NUL+lifecycle_cursor+NUL+authority_decision_ref+NUL+packet_digest)",
+      "cursor_identity": "session-id-plus-monotonic-lifecycle-cursor",
+      "authority_decision_ref": "required-durable-decision-receipt"
+    },
+    "generation_actor": "session-owner",
+    "generation_output": "validated-noncanonical-capture",
+    "promotion_actor": "authorized-promoter",
+    "same_actor": false,
+    "sink_cardinality": "exactly-one-per-lifecycle-event",
+    "fallback_policy": "post-cutover-fallback-is-noncanonical-ledger-and-never-session-artifact-v1",
+    "promotion_protocol": [
+      "acquire-durable-cross-process-lock",
+      "remeasure-and-replan-after-lock",
+      "verify-boundary-and-authority-mode",
+      "verify-capture-content-hash",
+      "compare-and-swap-prior-artifact-id",
+      "promote-idempotently",
+      "write-immutable-receipt"
+    ],
+    "personal_auto_promotion": "host-policy-not-product-default",
+    "work_hub_global_promotion": "explicit-authorization-required",
+    "dashboard_failure": "retain-session-and-pending-capture-for-retry",
+    "wrap_is_capture": false
+  },
+  "updater": {
+    "trust_root": "manifests/upstreams.lock.json",
+    "accepted_references": "immutable-tag-object-and-peeled-commit",
+    "allowlist": ["pinned-upstream-content", "product-owned-adapters", "product-owned-presets", "registered-repository-generated-overlays"],
+    "never_automatic": ["hooks", "installer", "host-policy", "trust-root", "allowlist", "agent-home", "permissions", "runner", "target-root"],
+    "canary": {
+      "environment": "disposable-worktree",
+      "required": ["manifest-and-schema-validation", "lean-fixture", "full-fixture", "codex-adapter", "claude-adapter", "host-preview", "rollback-drill"]
+    },
+    "rollback": {
+      "input": ["old-manifest", "new-manifest", "pre-state-snapshot", "apply-receipt"],
+      "result": "exact-old-content-and-pins",
+      "verification": "content-hash-readback"
+    },
+    "self_expansion": false,
+    "unknown_or_dirty_target": "skip-and-report"
+  },
+  "evidence": {
+    "schema": "johan-sdd/evidence-packet/v1",
+    "schema_path": "../schemas/evidence-packet.schema.json",
+    "required_at": ["slice", "pause", "handoff", "close", "update", "rollback"],
+    "compaction_resistant": true,
+    "large_logs": "referenced-by-path-and-sha256",
+    "transcript_is_evidence": false,
+    "missing_or_unreproducible": "needs-reconstruction"
+  }
+}

@@ -1,0 +1,15 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
+.venv/
+dist/
+build/
+.ruff_cache/
+.mypy_cache/
+
+# Host-local lifecycle state and generated evidence.
+.johan-sdd/
+
