@@ -4,53 +4,54 @@ Last verified: 2026-08-13
 
 ## Current phase
 
-Onda 1 complete locally; publication and external adoption remain gated.
+Public product published and globally installed. Host-owner adoption of the
+shared router, engineering-flow hub, and Codex compatibility alias is applied.
 
 ## Active work
 
-The portable runtime and its reconstructable closeout evidence are complete. A real
-`johan-dashboard` PR was classified independently by Codex and Grok, then exercised through
-capture generation, promotion, and idempotent replay. Claude was not invoked because Johan
-reported no available Claude quota; compatibility remains contract-tested without a live claim.
+None in this repository. Remaining JOH-70 work (scheduler/shared trigger and
+dashboard atualizar button) lives in `johan-dashboard`, not here.
 
 ## Locked decisions
 
 - Public downstream product, not a fork of Spec Kit or Matt skills.
 - Python 3.11 with `uv`; Codex and Claude are the first supported agents.
-- Spec Kit owns the medium/large delivery spine; local adapters own the delivery envelope.
-- Session ownership is per worktree plus explicit shared-resource claims.
-- The product emits host desired state and never writes directly to `.agents`.
-- Each session selects legacy JSON or Buzz as its authority; dual-write is forbidden.
+- Spec Kit owns the feature delivery spine: spec, plan, tasks, and orchestration.
+- `using-johan-skills` is the sole automatic phase router; it selects `micro`,
+  `small`, or `feature`, then `lean` or `full`.
+- `ask-matt` is an engineering-flow module hub, not a second artifact spine.
+- `disciplined-delivery` is a compatibility alias only.
+- `token-saver` bounds bulk reads and peer-review packets only.
+- Exactly one lifecycle authority and one artifact sink exist per event.
+- The public product emits desired state and never writes `.agents` or `.codex`.
+- The private host owner applies exact desired state with approval, scoped
+  pre-state, lock, readback, and rollback.
 
 ## Human gates
 
-- Remote creation, push, and public GitHub repository.
-- Any batch that applies desired state to a global agent home.
 - Work/global promotion and destructive cleanup.
+- Any later batch that changes global agent-home files outside the adopted allowlist.
 
 ## Current evidence
 
-- Local Git repository has a verified commit history on `main`, with no remote.
-- Upstream pins and local seams were independently inventoried in the active goal.
-- Onboarding taxonomy classification is `personal-project` under `personal-dev-root`.
-- The locked suite passes 198 tests, and `evidence/packets/local-runtime-closeout.json` binds the
-  implementation commit, verification log, charter, CLI hash, risks, and next consumer.
-- All four implementation worktrees and their local task branches were removed after patch-equivalence
-  and clean-worktree readback; the session registry records four closed claims at revision 3.
-- `evidence/packets/dashboard-pr109-pilot.json` binds Linear/PR readiness, independent
-  Codex+Grok `feature/full` decisions, Grok risk readback, and idempotent promotion proof.
-- `.gitattributes` fixes LF as the repository text policy, and evidence tests hash canonical LF so
-  receipts remain reproducible in worktrees created under Windows `core.autocrlf=true`.
-- The pilot is integrated on `main` at `49301ee`; a fresh detached checkout passed 198 tests,
-  compileall, lock validation, wheel/sdist build, evidence hashes, and clean-worktree readback.
+- Public repository: `https://github.com/johansabent/johan-sdd`.
+- `main` / `origin/main` at `fc072fc938aee4f139ecb407b2efb95f6e7e4f3e`.
+- Global install: `johan-sdd 0.1.0`.
+- Spec Kit: `specify 0.16.3`, tag `v0.16.3`, commit `b85aaeda4a7aec37a6620bba9d77ab37c6589141`.
+- Host-owner apply receipts are versioned in the private operations repository.
+- Shared home adoption commit: `4d898cbdf7479062482ad044d192bbd4cae2631c`
+  (taxonomy registration `8aec35d3c4a3f03a921998fbc1ea42ce88771331`).
+- Codex home alias commit: `567ebd2089c8c23db7ff530aa66bd08df879726c`.
+- Live `johan-sdd route` returns `micro`, `small`, and `feature` for measured
+  fixtures; `architecture-change` selects `full`; invalid input exits `2` and a
+  lean-vs-security policy block exits `3`.
+- Dashboard PR #109 merged at `57775ae22435a4431ea0aa076757d971257f1618`.
 
 ## Blockers
 
-No local implementation blocker. Publication and global-host adoption remain intentionally gated.
-The installed Grok review wrapper also needs a separate owner update for Grok 1.0.3's lowercase
-`end_turn`; the completed pilot report was recovered without retrying or changing global tooling.
+None for publication or the authorized global skill adoption.
 
 ## Next safe action
 
-Johan may separately authorize remote creation/push and public publication. Any application of
-desired state to a global agent home remains a different explicit gate.
+Shape the remaining JOH-70 scheduler/shared trigger and dashboard atualizar
+button from Linear `Triage`. Do not redesign `johan-sdd`.
