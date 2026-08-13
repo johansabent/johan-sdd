@@ -9,6 +9,7 @@ import hmac
 import json
 import os
 import re
+import secrets
 import socket
 import subprocess
 import tempfile
@@ -800,6 +801,126 @@ def create_dirty_pause(
         temporary_index.unlink(missing_ok=True)
 
 
+@dataclass(frozen=True)
+class OpenedSession:
+    """A newly registered claim plus the one-time lease token."""
+
+    session_id: str
+    lease_token: str
+    revision: int
+    claim: dict[str, object]
+    document: dict[str, object]
+
+
+def describe_worktree(repository: str | os.PathLike[str]) -> dict[str, str]:
+    """Measure the live checkout's canonical worktree object."""
+    repo = _git_path(Path(repository).resolve(strict=True), "rev-parse", "--show-toplevel")
+    git_dir = _git_path(repo, "rev-parse", "--path-format=absolute", "--git-dir")
+    common_dir = _git_path(repo, "rev-parse", "--path-format=absolute", "--git-common-dir")
+    kind = "primary" if git_dir == common_dir else "linked"
+    return {
+        "repo_id": common_dir.parent.name if common_dir.name == ".git" else common_dir.name,
+        "worktree_id": "primary" if kind == "primary" else repo.name,
+        "path": repo.as_posix(),
+        "kind": kind,
+        "branch": _git_text(repo, "symbolic-ref", "--short", "HEAD"),
+    }
+
+
+def _current_process(now: datetime) -> dict[str, object]:
+    started = _process_start_time(os.getpid())
+    if not isinstance(started, datetime) or started > now:
+        started = now
+    return {"host": socket.gethostname(), "pid": os.getpid(), "started_at": _format_time(started)}
+
+
+def open_work_session(
+    repository: str | os.PathLike[str],
+    *,
+    session_id: str,
+    mode: str,
+    owner: Mapping[str, str],
+    resources: Sequence[Mapping[str, str]],
+    authority_decision_ref: str,
+    lease_token: str | None = None,
+    ttl_seconds: int = 5400,
+    now: Callable[[], datetime] | None = None,
+) -> OpenedSession:
+    """Shape a claim from live git/process identity and register it."""
+    clock = now or (lambda: datetime.now(UTC))
+    instant = clock()
+    worktree = describe_worktree(repository)
+    if mode == "feature" and worktree["kind"] != "linked":
+        raise SessionError("feature mode requires a linked worktree")
+    if mode == "micro" and worktree["kind"] != "primary":
+        raise SessionError("micro mode requires the primary checkout")
+    if mode == "micro" and _run_git(
+        Path(worktree["path"]), "status", "--porcelain=v2", "-z", "--untracked-files=all"
+    ):
+        raise SessionError("micro mode requires a clean primary checkout")
+    token = lease_token or secrets.token_hex(32)
+    claim = {
+        "session_id": session_id,
+        "mode": mode,
+        "owner": {"agent": owner["agent"], "model": owner["model"]},
+        "process": _current_process(instant),
+        "lease": {
+            "token_hash": _token_hash(token),
+            "generation": 1,
+            "acquired_at": _format_time(instant),
+            "heartbeat_at": _format_time(instant),
+            "expires_at": _format_time(instant + timedelta(seconds=ttl_seconds)),
+            "ttl_seconds": ttl_seconds,
+        },
+        "worktree": worktree,
+        "state": "working",
+        "dirty": False,
+        "authority_decision_ref": authority_decision_ref,
+        "resources": [dict(resource) for resource in resources],
+    }
+    registry = SessionRegistry(repository, now=clock)
+    inspection = registry.inspect()
+    if inspection.document is None or inspection.errors:
+        detail = "; ".join(f"{error.code}: {error.message}" for error in inspection.errors)
+        raise RegistryInvalid(detail or "registry cannot be safely read")
+    document = registry.claim(
+        claim,
+        lease_token=token,
+        expected_revision=int(inspection.document["revision"]),
+    )
+    stored = next(
+        item
+        for item in document["claims"]
+        if isinstance(item, dict) and item.get("session_id") == session_id
+    )
+    return OpenedSession(
+        session_id=session_id,
+        lease_token=token,
+        revision=int(document["revision"]),
+        claim=copy.deepcopy(stored),
+        document=document,
+    )
+
+
+def close_work_session(
+    repository: str | os.PathLike[str],
+    session_id: str,
+    *,
+    lease_token: str,
+    expected_revision: int | None = None,
+) -> dict[str, object]:
+    """Close an owned claim; inspects the current revision when omitted."""
+    registry = SessionRegistry(repository)
+    revision = expected_revision
+    if revision is None:
+        inspection = registry.inspect()
+        if inspection.document is None or inspection.errors:
+            detail = "; ".join(f"{error.code}: {error.message}" for error in inspection.errors)
+            raise RegistryInvalid(detail or "registry cannot be safely read")
+        revision = int(inspection.document["revision"])
+    return registry.release(session_id, lease_token=lease_token, expected_revision=revision)
+
+
 __all__ = [
     "ClaimConflict",
     "ClaimNotFound",
@@ -807,6 +928,7 @@ __all__ = [
     "ConflictEvaluation",
     "DirtyPauseRejected",
     "LeaseTokenMismatch",
+    "OpenedSession",
     "ProcessStatus",
     "RegistryInspection",
     "RegistryInvalid",
@@ -814,5 +936,8 @@ __all__ = [
     "SecretMaterialError",
     "SessionError",
     "SessionRegistry",
+    "close_work_session",
     "create_dirty_pause",
+    "describe_worktree",
+    "open_work_session",
 ]
