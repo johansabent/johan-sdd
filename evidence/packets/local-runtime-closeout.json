@@ -1,0 +1,65 @@
+{
+  "schema_version": "johan-sdd/evidence-packet/v1",
+  "event_type": "close",
+  "work_id": "johan-sdd-local-runtime",
+  "agent": {"name": "codex", "model": "gpt-5"},
+  "git": {
+    "base_sha": "0d72bd8d437939d8e4e0ad21efa9917d1f9ca410",
+    "final_sha": "22f7f9f52965ae68ee1dd7090573b31feaaab31f"
+  },
+  "worktree_ref": "worktree:main",
+  "claim_ref": "claim:integration-closed:revision-3",
+  "contracts": [
+    {
+      "ref": "contract:integration-charter/v1",
+      "sha256": "ff3a9a4a19788447a02282c55b4ca5e71fee728b5ea7d24d69f8f9a0e2c9fd7a"
+    }
+  ],
+  "changes": [
+    {
+      "path": "src/johan_sdd/__main__.py",
+      "sha256": "d6fec4843d4202179f45c97a3d49c055794cc1c334446672a53807e31561841b",
+      "summary": "Integrate the public CLI over the completed runtime modules."
+    }
+  ],
+  "verification": [
+    {
+      "command": "uv run --locked pytest -q",
+      "exit_code": 0,
+      "result": "196 passed",
+      "log_ref": {
+        "ref": "evidence:logs/local-runtime-verification.txt",
+        "sha256": "a852d0cb37e784c8767d5ba69ba8ac4531689bfaf41fb2bfa5c6477776681948"
+      }
+    }
+  ],
+  "artifacts": [
+    {
+      "kind": "closeout-receipt",
+      "ref": "evidence:artifacts/local-runtime-closeout.json",
+      "sha256": "808e6d4bc073c186b1a7cdc194f80e331e425989fa7d11e6367588de0c77fcbc"
+    }
+  ],
+  "logs": [
+    {
+      "ref": "evidence:logs/local-runtime-verification.txt",
+      "sha256": "a852d0cb37e784c8767d5ba69ba8ac4531689bfaf41fb2bfa5c6477776681948"
+    }
+  ],
+  "decisions": [
+    {
+      "decision": "Keep CLI narrow and expose stateful transactions as typed Python interfaces.",
+      "rationale": "Avoid shallow pass-through commands that could blur filesystem and authority adapters."
+    }
+  ],
+  "risks": [
+    {
+      "risk": "POSIX lock behavior was not executed on this Windows host.",
+      "mitigation": "The POSIX path remains fail-closed and requires CI on a POSIX runner before publication support is claimed."
+    }
+  ],
+  "next": {
+    "consumer": "johan-dashboard-pilot",
+    "action": "Prove the Linear JOH connector, then run the Codex and Claude pilot in an isolated dashboard worktree."
+  }
+}

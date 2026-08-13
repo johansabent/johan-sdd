@@ -1,0 +1,34 @@
+{
+  "schema_version": "johan-sdd/evidence-artifact/v1",
+  "artifact_id": "closeout:johan-sdd-local-runtime",
+  "kind": "closeout-receipt",
+  "produced_at": "2026-08-13T20:40:00Z",
+  "subject": {
+    "ref": "git:commit/22f7f9f52965ae68ee1dd7090573b31feaaab31f",
+    "sha256": "sha256:a84bd3c09e244b91c9ec7c24e5e9e05e4139c7e7c99407a7747861b1079f456d"
+  },
+  "reconstruction": {
+    "inputs": [
+      {
+        "ref": "contract:integration-charter/v1",
+        "sha256": "sha256:ff3a9a4a19788447a02282c55b4ca5e71fee728b5ea7d24d69f8f9a0e2c9fd7a"
+      }
+    ],
+    "commands": [
+      {
+        "argv": ["uv", "run", "--locked", "pytest", "-q"],
+        "exit_code": 0,
+        "output": {
+          "ref": "evidence:logs/local-runtime-verification.txt",
+          "sha256": "sha256:a852d0cb37e784c8767d5ba69ba8ac4531689bfaf41fb2bfa5c6477776681948"
+        }
+      }
+    ],
+    "outputs": [
+      {
+        "ref": "artifact:local-runtime-closeout.json",
+        "sha256": "sha256:a852d0cb37e784c8767d5ba69ba8ac4531689bfaf41fb2bfa5c6477776681948"
+      }
+    ]
+  }
+}

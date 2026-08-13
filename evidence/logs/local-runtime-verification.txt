@@ -1,0 +1,9 @@
+command=uv run --locked pytest -q
+exit_code=0
+result=196 passed in 7.87s
+command=uv run --locked python -m compileall -q src
+exit_code=0
+command=uv lock --check
+exit_code=0
+result=Resolved 13 packages
+implementation_commit=22f7f9f52965ae68ee1dd7090573b31feaaab31f
