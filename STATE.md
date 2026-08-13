@@ -4,12 +4,12 @@ Last verified: 2026-08-13
 
 ## Current phase
 
-Onda 0: taxonomy, onboarding, upstream pins, and integration contracts.
+Onda 1: local runtime integrated; pilot and external adoption remain gated.
 
 ## Active work
 
-The root coordinator is establishing the public repository scaffold and freezing the first
-implementation contracts before dispatching isolated workstreams.
+The root coordinator is verifying the integrated CLI, routing, session, capture, host, updater,
+rollback, concurrency, and evidence paths before the Codex+Claude pilot.
 
 ## Locked decisions
 
@@ -28,7 +28,7 @@ implementation contracts before dispatching isolated workstreams.
 
 ## Current evidence
 
-- Local Git repository exists on unborn `main`, with no remote or commits.
+- Local Git repository has a verified commit history on `main`, with no remote.
 - Upstream pins and local seams were independently inventoried in the active goal.
 - Onboarding taxonomy classification is `personal-project` under `personal-dev-root`.
 
@@ -38,5 +38,5 @@ No implementation blocker. Publication and global-host adoption remain intention
 
 ## Next safe action
 
-Validate this onboarding batch, create the product scaffold and integration charter, then dispatch
-the Core, Router/Profile, and Lifecycle workstreams into isolated worktrees.
+Commit the integrated runtime, run the completion audit, then disposition the existing dashboard
+work safely before the Codex+Claude pilot.

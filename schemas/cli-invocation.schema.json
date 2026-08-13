@@ -14,15 +14,7 @@
       "items": { "type": "string", "minLength": 1 },
       "prefixItems": [{ "const": "johan-sdd" }]
     },
-    "command": {
-      "enum": [
-        "select-profile", "route", "claim-session", "heartbeat-session", "pause-session",
-        "release-session", "generate-capture", "promote-capture", "emit-desired-state",
-        "preview-host-apply", "record-host-apply", "preview-update", "apply-update",
-        "rollback-update", "validate-contract", "assess-micro", "resolve-content",
-        "scan-secrets", "record-decision", "emit-evidence"
-      ]
-    },
+    "command": { "enum": ["select-profile", "route"] },
     "input_refs": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/hashedRef" } },
     "output": {
       "oneOf": [
@@ -59,25 +51,7 @@
   },
   "allOf": [
     { "if": { "properties": { "command": { "const": "select-profile" } }, "required": ["command"] }, "then": { "properties": { "argv": { "prefixItems": [{ "const": "johan-sdd" }, { "const": "select-profile" }] } } } },
-    { "if": { "properties": { "command": { "const": "route" } }, "required": ["command"] }, "then": { "properties": { "argv": { "prefixItems": [{ "const": "johan-sdd" }, { "const": "route" }] } } } },
-    { "if": { "properties": { "command": { "const": "claim-session" } }, "required": ["command"] }, "then": { "properties": { "argv": { "prefixItems": [{ "const": "johan-sdd" }, { "const": "claim-session" }] } } } },
-    { "if": { "properties": { "command": { "const": "heartbeat-session" } }, "required": ["command"] }, "then": { "properties": { "argv": { "prefixItems": [{ "const": "johan-sdd" }, { "const": "heartbeat-session" }] } } } },
-    { "if": { "properties": { "command": { "const": "pause-session" } }, "required": ["command"] }, "then": { "properties": { "argv": { "prefixItems": [{ "const": "johan-sdd" }, { "const": "pause-session" }] } } } },
-    { "if": { "properties": { "command": { "const": "release-session" } }, "required": ["command"] }, "then": { "properties": { "argv": { "prefixItems": [{ "const": "johan-sdd" }, { "const": "release-session" }] } } } },
-    { "if": { "properties": { "command": { "const": "generate-capture" } }, "required": ["command"] }, "then": { "properties": { "argv": { "prefixItems": [{ "const": "johan-sdd" }, { "const": "generate-capture" }] } } } },
-    { "if": { "properties": { "command": { "const": "promote-capture" } }, "required": ["command"] }, "then": { "properties": { "argv": { "prefixItems": [{ "const": "johan-sdd" }, { "const": "promote-capture" }] } } } },
-    { "if": { "properties": { "command": { "const": "emit-desired-state" } }, "required": ["command"] }, "then": { "properties": { "argv": { "prefixItems": [{ "const": "johan-sdd" }, { "const": "emit-desired-state" }] } } } },
-    { "if": { "properties": { "command": { "const": "preview-host-apply" } }, "required": ["command"] }, "then": { "properties": { "argv": { "prefixItems": [{ "const": "johan-sdd" }, { "const": "preview-host-apply" }] } } } },
-    { "if": { "properties": { "command": { "const": "record-host-apply" } }, "required": ["command"] }, "then": { "properties": { "argv": { "prefixItems": [{ "const": "johan-sdd" }, { "const": "record-host-apply" }] } } } },
-    { "if": { "properties": { "command": { "const": "preview-update" } }, "required": ["command"] }, "then": { "properties": { "argv": { "prefixItems": [{ "const": "johan-sdd" }, { "const": "preview-update" }] } } } },
-    { "if": { "properties": { "command": { "const": "apply-update" } }, "required": ["command"] }, "then": { "properties": { "argv": { "prefixItems": [{ "const": "johan-sdd" }, { "const": "apply-update" }] } } } },
-    { "if": { "properties": { "command": { "const": "rollback-update" } }, "required": ["command"] }, "then": { "properties": { "argv": { "prefixItems": [{ "const": "johan-sdd" }, { "const": "rollback-update" }] } } } },
-    { "if": { "properties": { "command": { "const": "validate-contract" } }, "required": ["command"] }, "then": { "properties": { "argv": { "prefixItems": [{ "const": "johan-sdd" }, { "const": "validate-contract" }] } } } },
-    { "if": { "properties": { "command": { "const": "assess-micro" } }, "required": ["command"] }, "then": { "properties": { "argv": { "prefixItems": [{ "const": "johan-sdd" }, { "const": "assess-micro" }] } } } },
-    { "if": { "properties": { "command": { "const": "resolve-content" } }, "required": ["command"] }, "then": { "properties": { "argv": { "prefixItems": [{ "const": "johan-sdd" }, { "const": "resolve-content" }] } } } },
-    { "if": { "properties": { "command": { "const": "scan-secrets" } }, "required": ["command"] }, "then": { "properties": { "argv": { "prefixItems": [{ "const": "johan-sdd" }, { "const": "scan-secrets" }] } } } },
-    { "if": { "properties": { "command": { "const": "record-decision" } }, "required": ["command"] }, "then": { "properties": { "argv": { "prefixItems": [{ "const": "johan-sdd" }, { "const": "record-decision" }] } } } },
-    { "if": { "properties": { "command": { "const": "emit-evidence" } }, "required": ["command"] }, "then": { "properties": { "argv": { "prefixItems": [{ "const": "johan-sdd" }, { "const": "emit-evidence" }] } } } }
+    { "if": { "properties": { "command": { "const": "route" } }, "required": ["command"] }, "then": { "properties": { "argv": { "prefixItems": [{ "const": "johan-sdd" }, { "const": "route" }] } } } }
   ],
   "$defs": {
     "portableRef": { "type": "string", "pattern": "^[a-z][a-z0-9-]*:[A-Za-z0-9][A-Za-z0-9._:/@+=-]*$" },

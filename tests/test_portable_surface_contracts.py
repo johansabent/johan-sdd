@@ -29,13 +29,13 @@ def test_cli_invocation_binds_portable_grammar_input_and_machine_output() -> Non
     invocation = {
         "schema_version": "johan-sdd/cli-invocation/v1",
         "invocation_id": "cli-01",
-        "argv": ["johan-sdd", "assess-micro", "--json"],
-        "command": "assess-micro",
+        "argv": ["johan-sdd", "route", "--format", "json"],
+        "command": "route",
         "input_refs": [ref()],
         "output": {
             "format": "json",
             "media_type": "application/json",
-            "schema_ref": "schema:micro-assessment/v1",
+            "schema_ref": "schema:delivery-route/v1",
         },
         "exit_codes": {
             "success": 0,
@@ -54,28 +54,7 @@ def test_cli_invocation_binds_portable_grammar_input_and_machine_output() -> Non
 
 @pytest.mark.parametrize(
     "command",
-    [
-        "select-profile",
-        "route",
-        "claim-session",
-        "heartbeat-session",
-        "pause-session",
-        "release-session",
-        "generate-capture",
-        "promote-capture",
-        "emit-desired-state",
-        "preview-host-apply",
-        "record-host-apply",
-        "preview-update",
-        "apply-update",
-        "rollback-update",
-        "validate-contract",
-        "assess-micro",
-        "resolve-content",
-        "scan-secrets",
-        "record-decision",
-        "emit-evidence",
-    ],
+    ["select-profile", "route"],
 )
 def test_cli_contract_freezes_every_public_operational_command(command: str) -> None:
     invocation = {

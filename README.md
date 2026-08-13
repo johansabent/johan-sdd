@@ -32,6 +32,13 @@ uv run --locked pytest
 uv run --locked johan-sdd --version
 ```
 
+The CLI keeps one small routing seam: `select-profile` and `route` accept a UTF-8 JSON object from
+`--input <path>` or stdin (`--input -`) and emit JSON by default. Use `--format text` for a compact
+human readout. Exit codes are stable: `0` success, `2` invalid input, `3` policy block, and `4`
+operational failure. Session ownership, capture/promotion, host transactions, and updater rollback
+are exposed as typed Python interfaces because their callers must supply process, filesystem, and
+authority adapters rather than flattening those capabilities into unsafe CLI pass-throughs.
+
 No remote, release, package publication, or host integration is implied by the local scaffold.
 
 ## Upstreams
