@@ -1,0 +1,58 @@
+{
+  "schema_version": "johan-sdd/evidence-artifact/v1",
+  "artifact_id": "slice:dashboard-pr109-pilot",
+  "kind": "slice-manifest",
+  "produced_at": "2026-08-13T21:21:12Z",
+  "subject": {
+    "ref": "git:diff/bf8bf7eebadf6e4f01d3f491e8375bd0cfe55b74..2ccd1d55379ac450feaeccd8b1b2d0d714f0acb8",
+    "sha256": "sha256:6a046759d5e9709ae4582b6d688219a6c902985acc3168a8486df8f7637bff91"
+  },
+  "reconstruction": {
+    "inputs": [
+      {
+        "ref": "contract:integration-charter/v1",
+        "sha256": "sha256:ff3a9a4a19788447a02282c55b4ca5e71fee728b5ea7d24d69f8f9a0e2c9fd7a"
+      }
+    ],
+    "commands": [
+      {
+        "argv": ["johan-sdd", "route", "--input", "-"],
+        "exit_code": 0,
+        "output": {
+          "ref": "evidence:logs/dashboard-pr109-pilot.txt",
+          "sha256": "sha256:064fd5537ad808ef6ca9c9a67f7febd4c1211f42c71c8d09a88bce701e853c7b"
+        }
+      },
+      {
+        "argv": ["johan-sdd", "select-profile", "--input", "-"],
+        "exit_code": 0,
+        "output": {
+          "ref": "evidence:logs/dashboard-pr109-pilot.txt",
+          "sha256": "sha256:064fd5537ad808ef6ca9c9a67f7febd4c1211f42c71c8d09a88bce701e853c7b"
+        }
+      },
+      {
+        "argv": ["Invoke-GrokReview.ps1", "-MaxTurns", "6"],
+        "exit_code": 1,
+        "output": {
+          "ref": "evidence:logs/dashboard-pr109-pilot.txt",
+          "sha256": "sha256:064fd5537ad808ef6ca9c9a67f7febd4c1211f42c71c8d09a88bce701e853c7b"
+        }
+      },
+      {
+        "argv": ["uv", "run", "--locked", "python", "capture-promotion-pilot"],
+        "exit_code": 0,
+        "output": {
+          "ref": "evidence:logs/dashboard-pr109-pilot.txt",
+          "sha256": "sha256:064fd5537ad808ef6ca9c9a67f7febd4c1211f42c71c8d09a88bce701e853c7b"
+        }
+      }
+    ],
+    "outputs": [
+      {
+        "ref": "pilot:dashboard-pr109/decision",
+        "sha256": "sha256:064fd5537ad808ef6ca9c9a67f7febd4c1211f42c71c8d09a88bce701e853c7b"
+      }
+    ]
+  }
+}

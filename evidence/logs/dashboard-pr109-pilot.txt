@@ -1,0 +1,53 @@
+pilot=johan-dashboard-pr109
+verified_at=2026-08-13T21:21:12Z
+dashboard_issue=JOH-70
+dashboard_issue_status=In Review
+dashboard_project=AI Dashboard / Operator Workbench
+dashboard_pr=https://github.com/johansabent/johan-dashboard/pull/109
+dashboard_base=bf8bf7eebadf6e4f01d3f491e8375bd0cfe55b74
+dashboard_head=2ccd1d55379ac450feaeccd8b1b2d0d714f0acb8
+dashboard_diff_sha256=6a046759d5e9709ae4582b6d688219a6c902985acc3168a8486df8f7637bff91
+dashboard_diff_bytes=92660
+dashboard_files=13
+dashboard_additions=2403
+dashboard_deletions=1
+dashboard_ci=build-and-test:SUCCESS
+dashboard_worktree=clean
+dashboard_existing_work=preserved PR 109 and branch codex-johan/joh-70b-manual-capture-generation
+dashboard_orphan_registration=preserved JOH-73 Stage A registration; no deletion authorized
+
+linear_preflight=list_teams returned Johan PC; list_issue_statuses(team=JOH) returned 10 statuses
+linear_issue_read=JOH-70 manual capture generation scope confirmed
+
+codex_route_command=johan-sdd route --input -
+codex_route_exit=0
+codex_route_result={"lane":"feature","reason":"feature: work scope is medium or large"}
+codex_profile_command=johan-sdd select-profile --input -
+codex_profile_exit=0
+codex_profile_result={"hard_triggers":["architecture-change","multi-system-coordination","public-contract-change"],"profile":"full","reason":"full profile: architecture-change, multi-system-coordination, public-contract-change"}
+codex_adapter_result={"interface":"spec-driven-delivery/v1","lane":"feature","profile":"full","delivery_spine":true,"phase_router_interface":"phase-router/v1","engineering_flow_hub_interface":"engineering-flow-hub/v1","engineering_modules":["shaping","tdd","diagnosis","prototype","review"]}
+
+grok_cli_version=1.0.3
+grok_model=grok-4.6
+grok_tool_mode=inline-no-tools
+grok_result={"lane":"feature","profile":"full","hard_triggers":["architecture change","public contract change","multi-system coordination","high blast radius"],"delivery_spine":"spec-driven-delivery/v1; Spec Kit owns spec/plan/tasks/orchestration; engineering-flow hub owns shaping/TDD/diagnosis/prototype/review","dual_write":false,"rationale":"13 files and 2403 additions exceed micro (docs/config only, <=3 files, <=50 lines). Runtime, tests, ADR/public boundary, tracker-linked STATE, and session/capture artifacts are durable feature work. ADR/public boundary plus coordination of generation, capture, promotion, and agent adapters force full over lean. One lifecycle sink only.","residual_risks":["session/capture artifacts may blur generation vs promotion","tracker-linked STATE may be treated as a live contract","agent-adapter scope vs host-neutral core not fully bounded by the given facts"]}
+grok_wrapper_result=report recovered from the completed local session because Grok 1.0.3 emitted stopReason end_turn while the installed wrapper accepts only EndTurn
+grok_retry=false
+
+risk_readback_generation_promotion=mitigated by dashboard ADR 0018 lines 29-32 and scripts/capture-refresh.mjs outside-write and staging-only guards
+risk_readback_state_authority=mitigated by dashboard AGENTS.md lines 80-86: Linear is operational, repo files own engineering evidence, lifecycle authority remains single-sink
+risk_readback_host_boundary=mitigated by johan-sdd optional johan-host-adapter metadata and host-neutral core tests
+
+capture_authority_mode=pre_cutover_json_authority
+capture_sink=session_artifact_v1
+capture_id=cap_3ea01856f771ea7ce78dff2a034b56f1a9c629e2d65eac13ff293e02642981bf
+capture_packet_digest=25b2d2e7ab5fbba12e498ff9f76911b18475d1744a92aafc07e5e4461039d04c
+capture_first_phase=committed
+capture_first_target_changed=true
+capture_replay_phase=committed
+capture_replay_target_changed=false
+capture_readback_sha256=96dcf9a5fbb9fec97caf329f54c296c782dd756e8522d507c2077f8eff68a5d3
+
+claude_execution=not-run
+claude_reason=user reported no Claude tokens on 2026-08-13
+claude_compatibility_evidence=local contract and updater canary tests only; no paid Claude claim

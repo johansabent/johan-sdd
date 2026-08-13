@@ -1,0 +1,76 @@
+{
+  "schema_version": "johan-sdd/evidence-packet/v1",
+  "event_type": "slice",
+  "work_id": "dashboard-pr109-cross-agent-pilot",
+  "agent": {
+    "name": "codex+grok",
+    "model": "gpt-5.6-sol+grok-4.6"
+  },
+  "git": {
+    "base_sha": "bf8bf7eebadf6e4f01d3f491e8375bd0cfe55b74",
+    "final_sha": "2ccd1d55379ac450feaeccd8b1b2d0d714f0acb8"
+  },
+  "worktree_ref": "worktree:johan-sdd-pilot-pr109",
+  "claim_ref": "claim:pilot-pr109-20260813:generation-1",
+  "contracts": [
+    {
+      "ref": "contract:integration-charter/v1",
+      "sha256": "ff3a9a4a19788447a02282c55b4ca5e71fee728b5ea7d24d69f8f9a0e2c9fd7a"
+    }
+  ],
+  "changes": [
+    {
+      "path": "johan-dashboard@pull/109",
+      "sha256": "6a046759d5e9709ae4582b6d688219a6c902985acc3168a8486df8f7637bff91",
+      "summary": "Classify a real 13-file dashboard feature diff without mutating its active branch."
+    }
+  ],
+  "verification": [
+    {
+      "command": "johan-sdd route/profile + Grok independent classification + capture promotion replay",
+      "exit_code": 0,
+      "result": "passed: both agents selected feature/full and replay was idempotent",
+      "log_ref": {
+        "ref": "evidence:logs/dashboard-pr109-pilot.txt",
+        "sha256": "064fd5537ad808ef6ca9c9a67f7febd4c1211f42c71c8d09a88bce701e853c7b"
+      }
+    }
+  ],
+  "artifacts": [
+    {
+      "kind": "slice-manifest",
+      "ref": "evidence:artifacts/dashboard-pr109-pilot.json",
+      "sha256": "9945bb58e423bbe3b52eb5df1b9aade0cf25636d7a14e8abd332cd6218f5711e"
+    }
+  ],
+  "logs": [
+    {
+      "ref": "evidence:logs/dashboard-pr109-pilot.txt",
+      "sha256": "064fd5537ad808ef6ca9c9a67f7febd4c1211f42c71c8d09a88bce701e853c7b"
+    }
+  ],
+  "decisions": [
+    {
+      "decision": "Run the available cross-agent pilot with Codex and Grok.",
+      "rationale": "Johan reported no Claude quota and explicitly limited external model use to Grok today."
+    },
+    {
+      "decision": "Preserve the active dashboard PR and the orphaned JOH-73 registration.",
+      "rationale": "The pilot is read-only against dashboard state, and deletion was not authorized."
+    }
+  ],
+  "risks": [
+    {
+      "risk": "A live Claude execution was not performed in this pilot.",
+      "mitigation": "Record no live-Claude claim; retain the passing Claude adapter and updater-canary contract tests as compatibility evidence."
+    },
+    {
+      "risk": "Grok 1.0.3 emits end_turn while the installed wrapper requires EndTurn.",
+      "mitigation": "Recover the completed report from the exact local session, record the wrapper failure, and do not retry or modify the global skill."
+    }
+  ],
+  "next": {
+    "consumer": "johan-publication-gate",
+    "action": "Choose separately whether to create/push the public GitHub repository and whether to adopt desired state globally."
+  }
+}

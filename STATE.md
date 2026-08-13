@@ -4,12 +4,14 @@ Last verified: 2026-08-13
 
 ## Current phase
 
-Onda 1: local runtime integrated; pilot and external adoption remain gated.
+Onda 1 complete locally; publication and external adoption remain gated.
 
 ## Active work
 
-The local runtime and its reconstructable closeout evidence are complete. The Codex+Claude pilot
-is waiting at the dashboard repository's mandatory live Linear preflight.
+The portable runtime and its reconstructable closeout evidence are complete. A real
+`johan-dashboard` PR was classified independently by Codex and Grok, then exercised through
+capture generation, promotion, and idempotent replay. Claude was not invoked because Johan
+reported no available Claude quota; compatibility remains contract-tested without a live claim.
 
 ## Locked decisions
 
@@ -31,18 +33,22 @@ is waiting at the dashboard repository's mandatory live Linear preflight.
 - Local Git repository has a verified commit history on `main`, with no remote.
 - Upstream pins and local seams were independently inventoried in the active goal.
 - Onboarding taxonomy classification is `personal-project` under `personal-dev-root`.
-- The locked suite passes 197 tests, and `evidence/packets/local-runtime-closeout.json` binds the
+- The locked suite passes 198 tests, and `evidence/packets/local-runtime-closeout.json` binds the
   implementation commit, verification log, charter, CLI hash, risks, and next consumer.
 - All four implementation worktrees and their local task branches were removed after patch-equivalence
   and clean-worktree readback; the session registry records four closed claims at revision 3.
+- `evidence/packets/dashboard-pr109-pilot.json` binds Linear/PR readiness, independent
+  Codex+Grok `feature/full` decisions, Grok risk readback, and idempotent promotion proof.
+- `.gitattributes` fixes LF as the repository text policy, and evidence tests hash canonical LF so
+  receipts remain reproducible in worktrees created under Windows `core.autocrlf=true`.
 
 ## Blockers
 
-The current Codex runtime exposes no Linear connector. The `johan-dashboard` hard gate requires a
-live read proving workspace `johan-pc`, team `Johan PC`, key `JOH` before non-trivial pilot work.
-Publication and global-host adoption also remain intentionally gated.
+No local implementation blocker. Publication and global-host adoption remain intentionally gated.
+The installed Grok review wrapper also needs a separate owner update for Grok 1.0.3's lowercase
+`end_turn`; the completed pilot report was recovered without retrying or changing global tooling.
 
 ## Next safe action
 
-Restore a Linear connector that proves live read access to `JOH`, then run the Codex+Claude pilot
-in an isolated dashboard worktree. Do not bypass the dashboard's tracker gate.
+Run the final locked suite in a fresh LF checkout, integrate the pilot branch locally, and leave
+remote creation/push plus global desired-state application as explicit Johan decisions.

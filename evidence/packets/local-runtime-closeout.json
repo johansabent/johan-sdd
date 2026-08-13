@@ -18,7 +18,7 @@
   "changes": [
     {
       "path": "src/johan_sdd/__main__.py",
-      "sha256": "d6fec4843d4202179f45c97a3d49c055794cc1c334446672a53807e31561841b",
+      "sha256": "50ba2281c1772c4471bbbf833452f0c60545c9b6600c3573bdf5684074c3bac7",
       "summary": "Integrate the public CLI over the completed runtime modules."
     }
   ],
