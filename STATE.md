@@ -35,13 +35,20 @@ dashboard atualizar button) lives in `johan-dashboard`, not here.
 ## Current evidence
 
 - Public repository: `https://github.com/johansabent/johan-sdd`.
-- `main` / `origin/main` at `fc072fc938aee4f139ecb407b2efb95f6e7e4f3e`.
+- Verified base: `main` / `origin/main` at
+  `2ced86ff5070d744f611ce9e43a01688178596b6`.
+- Local functional fix: `cedf2e2872158c973a1ea7df627e82edee89e53e`
+  requires `python -m johan_sdd.sessions open` to receive a live explicit
+  agent process; the Python API retains its in-process default.
+- `uv run --locked pytest -q`: 210 passed after the fix.
 - Global install: `johan-sdd 0.1.0`.
 - Spec Kit: `specify 0.16.3`, tag `v0.16.3`, commit `b85aaeda4a7aec37a6620bba9d77ab37c6589141`.
 - Host-owner apply receipts are versioned in the private operations repository.
 - Shared home adoption commit: `4d898cbdf7479062482ad044d192bbd4cae2631c`
   (taxonomy registration `8aec35d3c4a3f03a921998fbc1ea42ce88771331`).
 - Codex home alias commit: `567ebd2089c8c23db7ff530aa66bd08df879726c`.
+- Token-saver explicitly declares no authority in the shared `.agents` commit
+  `12be7dd`.
 - Live `johan-sdd route` returns `micro`, `small`, and `feature` for measured
   fixtures; `architecture-change` selects `full`; invalid input exits `2` and a
   lean-vs-security policy block exits `3`.
