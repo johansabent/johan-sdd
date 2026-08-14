@@ -14,6 +14,7 @@ import pytest
 from johan_sdd.sessions import (
     LeaseTokenMismatch,
     OpenedSession,
+    ProcessStatus,
     SessionError,
     SessionRegistry,
     close_work_session,
@@ -271,7 +272,7 @@ def test_open_work_session_rejects_micro_on_linked_worktree(tmp_path: Path) -> N
         )
 
 
-def test_module_cli_opens_and_closes_without_a_hand_built_claim(tmp_path: Path, capsys) -> None:
+def test_module_cli_requires_an_explicit_agent_process(tmp_path: Path, capsys) -> None:
     from johan_sdd.sessions.__main__ import main as session_main
 
     repo = init_repo(tmp_path)
@@ -298,12 +299,83 @@ def test_module_cli_opens_and_closes_without_a_hand_built_claim(tmp_path: Path, 
         encoding="utf-8",
     )
 
-    assert session_main(["open", "--input", os.fspath(payload)]) == 0
+    assert session_main(["open", "--input", os.fspath(payload)]) == 2
+    assert "missing process" in capsys.readouterr().err
+
+
+def test_module_cli_rejects_a_dead_agent_process(tmp_path: Path, monkeypatch, capsys) -> None:
+    from johan_sdd.sessions import __main__ as sessions_cli
+
+    repo = init_repo(tmp_path)
+    linked = tmp_path / "linked"
+    git(repo, "worktree", "add", "-qb", "feat/session-open", os.fspath(linked))
+    payload = tmp_path / "open.json"
+    payload.write_text(
+        json.dumps(
+            {
+                "repository": os.fspath(linked),
+                "session_id": "session-cli-dead-01",
+                "mode": "feature",
+                "owner": {"agent": "grok", "model": "grok-4.6"},
+                "resources": [
+                    {
+                        "resource_type": "global-agents",
+                        "resource_id": "agent-home:shared",
+                        "access": "exclusive",
+                    }
+                ],
+                "authority_decision_ref": "authority:test:1",
+                "process": {"host": "caller-host", "pid": 4242, "started_at": "2026-08-13T11:59:00Z"},
+            }
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(sessions_cli, "_default_process_probe", lambda process: ProcessStatus.DEAD)
+
+    assert sessions_cli.main(["open", "--input", os.fspath(payload)]) == 3
+    assert "not live" in capsys.readouterr().err
+
+
+def test_module_cli_opens_for_a_live_explicit_agent_process(tmp_path: Path, monkeypatch, capsys) -> None:
+    from johan_sdd.sessions import __main__ as sessions_cli
+
+    repo = init_repo(tmp_path)
+    linked = tmp_path / "linked"
+    git(repo, "worktree", "add", "-qb", "feat/session-open", os.fspath(linked))
+    payload = tmp_path / "open.json"
+    payload.write_text(
+        json.dumps(
+            {
+                "repository": os.fspath(linked),
+                "session_id": "session-cli-01",
+                "mode": "feature",
+                "owner": {"agent": "grok", "model": "grok-4.6"},
+                "resources": [
+                    {
+                        "resource_type": "global-agents",
+                        "resource_id": "agent-home:shared",
+                        "access": "exclusive",
+                    }
+                ],
+                "authority_decision_ref": "authority:test:1",
+                "process": {"host": "caller-host", "pid": 4242, "started_at": "2026-08-13T11:59:00Z"},
+            }
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(sessions_cli, "_default_process_probe", lambda process: ProcessStatus.LIVE)
+
+    assert sessions_cli.main(["open", "--input", os.fspath(payload)]) == 0
     opened = json.loads(capsys.readouterr().out)
     assert opened["session_id"] == "session-cli-01"
     assert opened["revision"] == 1
     assert opened["lease_token"]
     assert "token_hash" in opened["claim"]["lease"]
+    assert opened["claim"]["process"] == {
+        "host": "caller-host",
+        "pid": 4242,
+        "started_at": "2026-08-13T11:59:00Z",
+    }
 
     close_payload = tmp_path / "close.json"
     close_payload.write_text(
@@ -316,8 +388,7 @@ def test_module_cli_opens_and_closes_without_a_hand_built_claim(tmp_path: Path, 
         ),
         encoding="utf-8",
     )
-    assert session_main(["close", "--input", os.fspath(close_payload)]) == 0
+    assert sessions_cli.main(["close", "--input", os.fspath(close_payload)]) == 0
     closed = json.loads(capsys.readouterr().out)
     assert closed["revision"] == 2
     assert closed["claims"][0]["state"] == "closed"
-

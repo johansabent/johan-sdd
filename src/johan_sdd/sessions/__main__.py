@@ -8,7 +8,13 @@ import sys
 from collections.abc import Mapping, Sequence
 from pathlib import Path
 
-from johan_sdd.sessions import SessionError, close_work_session, open_work_session
+from johan_sdd.sessions import (
+    ProcessStatus,
+    SessionError,
+    _default_process_probe,
+    close_work_session,
+    open_work_session,
+)
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -21,6 +27,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     try:
         payload = _read_payload(arguments.input)
         if arguments.command == "open":
+            process = _required_live_process(payload["process"])
             opened = open_work_session(
                 _string(payload["repository"], "repository"),
                 session_id=_string(payload["session_id"], "session_id"),
@@ -32,7 +39,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 ),
                 lease_token=_optional_string(payload.get("lease_token"), "lease_token"),
                 ttl_seconds=_optional_int(payload.get("ttl_seconds"), "ttl_seconds", 5400),
-                process=_optional_process(payload.get("process")),
+                process=process,
             )
             result = {
                 "session_id": opened.session_id,
@@ -93,19 +100,21 @@ def _object(value: object, field: str) -> dict[str, str]:
     return {str(key): str(item) for key, item in value.items()}
 
 
-def _optional_process(value: object) -> dict[str, object] | None:
-    if value is None:
-        return None
+def _required_live_process(value: object) -> dict[str, object]:
     if not isinstance(value, Mapping):
         raise ValueError("process must be an object")
     pid = _optional_int(value.get("pid"), "process.pid")
     if pid is None:
         raise ValueError("process.pid must be an integer")
-    return {
+    process = {
         "host": _string(value.get("host"), "process.host"),
         "pid": pid,
         "started_at": _string(value.get("started_at"), "process.started_at"),
     }
+    status = _default_process_probe(process)
+    if status is not ProcessStatus.LIVE:
+        raise SessionError(f"agent process is not live ({status.value})")
+    return process
 
 
 def _resources(value: object) -> list[dict[str, str]]:
