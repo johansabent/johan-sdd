@@ -844,6 +844,7 @@ def open_work_session(
     authority_decision_ref: str,
     lease_token: str | None = None,
     ttl_seconds: int = 5400,
+    process: Mapping[str, object] | None = None,
     now: Callable[[], datetime] | None = None,
 ) -> OpenedSession:
     """Shape a claim from live git/process identity and register it."""
@@ -854,16 +855,19 @@ def open_work_session(
         raise SessionError("feature mode requires a linked worktree")
     if mode == "micro" and worktree["kind"] != "primary":
         raise SessionError("micro mode requires the primary checkout")
-    if mode == "micro" and _run_git(
-        Path(worktree["path"]), "status", "--porcelain=v2", "-z", "--untracked-files=all"
-    ):
+    dirty = bool(
+        _run_git(Path(worktree["path"]), "status", "--porcelain=v2", "-z", "--untracked-files=all")
+    )
+    if mode == "micro" and dirty:
         raise SessionError("micro mode requires a clean primary checkout")
+    if mode == "feature" and dirty:
+        raise SessionError("feature working claim requires a clean worktree")
     token = lease_token or secrets.token_hex(32)
     claim = {
         "session_id": session_id,
         "mode": mode,
         "owner": {"agent": owner["agent"], "model": owner["model"]},
-        "process": _current_process(instant),
+        "process": dict(process) if process is not None else _current_process(instant),
         "lease": {
             "token_hash": _token_hash(token),
             "generation": 1,

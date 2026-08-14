@@ -32,6 +32,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 ),
                 lease_token=_optional_string(payload.get("lease_token"), "lease_token"),
                 ttl_seconds=_optional_int(payload.get("ttl_seconds"), "ttl_seconds", 5400),
+                process=_optional_process(payload.get("process")),
             )
             result = {
                 "session_id": opened.session_id,
@@ -90,6 +91,21 @@ def _object(value: object, field: str) -> dict[str, str]:
     if not isinstance(value, Mapping) or not all(isinstance(item, str) for item in value.values()):
         raise ValueError(f"{field} must be an object of strings")
     return {str(key): str(item) for key, item in value.items()}
+
+
+def _optional_process(value: object) -> dict[str, object] | None:
+    if value is None:
+        return None
+    if not isinstance(value, Mapping):
+        raise ValueError("process must be an object")
+    pid = _optional_int(value.get("pid"), "process.pid")
+    if pid is None:
+        raise ValueError("process.pid must be an integer")
+    return {
+        "host": _string(value.get("host"), "process.host"),
+        "pid": pid,
+        "started_at": _string(value.get("started_at"), "process.started_at"),
+    }
 
 
 def _resources(value: object) -> list[dict[str, str]]:

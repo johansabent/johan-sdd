@@ -191,6 +191,51 @@ def test_open_work_session_registers_micro_on_clean_primary(tmp_path: Path) -> N
     assert opened.claim["resources"][0]["resource_type"] == "global-agents"
 
 
+def test_open_work_session_rejects_dirty_feature_without_recovery(tmp_path: Path) -> None:
+    repo = init_repo(tmp_path)
+    linked = tmp_path / "linked"
+    git(repo, "worktree", "add", "-qb", "feat/session-open", os.fspath(linked))
+    (linked / "tracked.txt").write_text("dirty\n", encoding="utf-8")
+
+    with pytest.raises(SessionError, match="clean worktree"):
+        open_work_session(
+            linked,
+            session_id="session-dirty-01",
+            mode="feature",
+            owner={"agent": "grok", "model": "grok-4.6"},
+            resources=[
+                {"resource_type": "repo-files", "resource_id": "tracked.txt", "access": "exclusive"}
+            ],
+            authority_decision_ref="authority:test:1",
+        )
+
+
+def test_open_work_session_records_an_explicit_caller_process(tmp_path: Path) -> None:
+    repo = init_repo(tmp_path)
+    linked = tmp_path / "linked"
+    git(repo, "worktree", "add", "-qb", "feat/session-open", os.fspath(linked))
+    process = {
+        "host": "caller-host",
+        "pid": 4242,
+        "started_at": "2026-08-13T11:59:00Z",
+    }
+
+    opened = open_work_session(
+        linked,
+        session_id="session-process-01",
+        mode="feature",
+        owner={"agent": "grok", "model": "grok-4.6"},
+        resources=[
+            {"resource_type": "repo-files", "resource_id": "src/johan_sdd/sessions", "access": "exclusive"}
+        ],
+        authority_decision_ref="authority:test:1",
+        process=process,
+        now=lambda: datetime(2026, 8, 13, 12, tzinfo=UTC),
+    )
+
+    assert opened.claim["process"] == process
+
+
 def test_open_work_session_rejects_micro_on_dirty_primary(tmp_path: Path) -> None:
     repo = init_repo(tmp_path)
     (repo / "tracked.txt").write_text("dirty\n", encoding="utf-8")
